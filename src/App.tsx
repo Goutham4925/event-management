@@ -1,0 +1,114 @@
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
+
+// Public Pages
+import Index from "./pages/Index";
+import About from "./pages/About";
+import Works from "./pages/Works";
+import EventDetails from "./pages/EventDetails";
+import Gallery from "./pages/Gallery";
+import Testimonials from "./pages/Testimonials";
+import Contact from "./pages/Contact";
+import NotFound from "./pages/NotFound";
+
+// Admin Pages
+import AdminLogin from "./pages/admin/Login";
+import Dashboard from "./pages/admin/Dashboard";
+import ManageEvents from "./pages/admin/ManageEvents";
+import ManageGallery from "./pages/admin/ManageGallery";
+import ManageTestimonials from "./pages/admin/ManageTestimonials";
+import ManageSettings from "./pages/admin/ManageSettings";
+import AdminStats from "./pages/admin/Stats";
+
+
+const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Index />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/works" element={<Works />} />
+            <Route path="/works/:id" element={<EventDetails />} />
+            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/testimonials" element={<Testimonials />} />
+            <Route path="/contact" element={<Contact />} />
+
+            {/* Admin Routes */}
+            <Route path="/admin" element={<AdminLogin />} />
+            <Route
+              path="/admin/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/events"
+              element={
+                <ProtectedRoute>
+                  <ManageEvents />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/gallery"
+              element={
+                <ProtectedRoute>
+                  <ManageGallery />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/testimonials"
+              element={
+                <ProtectedRoute>
+                  <ManageTestimonials />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/settings"
+              element={
+                <ProtectedRoute>
+                  <ManageSettings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/stats"
+              element={
+                <ProtectedRoute>
+                  <AdminStats />
+                </ProtectedRoute>
+              }
+            />
+
+
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+
+      </TooltipProvider>
+    </AuthProvider>
+  </QueryClientProvider>
+);
+
+export default App;

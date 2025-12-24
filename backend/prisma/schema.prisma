@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =========================
+// ADMIN
+// =========================
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+// =========================
+// SITE SETTINGS (GLOBAL)
+// =========================
+model SiteSettings {
+  id String @id @default("settings")
+
+  // Hero
+  heroBadge    String?
+  heroTitle    String
+  heroSubtitle String
+  heroImage    String?
+
+  // About
+  aboutHeading String?
+  aboutText    String?
+
+
+  // Portfolio
+  portfolioTitle       String?
+  portfolioSubtitle    String?
+  portfolioDescription String?
+
+  // Testimonials
+  testimonialTitle    String?
+  testimonialSubtitle String?
+
+  // CTA
+  ctaTitle    String
+  ctaSubtitle String
+
+  // Contact
+  contactEmail String?
+  contactPhone String?
+  address      String?
+
+  // Social
+  socialLinks Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+// =========================
+// STATS (USED MULTIPLE PAGES)
+// =========================
+model Stat {
+  id        String   @id @default(cuid())
+  label     String
+  value     String
+  page      StatPage
+  order     Int
+
+  createdAt DateTime @default(now())
+}
+
+enum StatPage {
+  HOME
+  ABOUT
+  TESTIMONIALS
+}
+
+// =========================
+// EVENTS
+// =========================
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  category    String
+  date        DateTime
+  client      String
+  coverImage  String
+  featured    Boolean  @default(false)
+  order       Int?
+
+  gallery     GalleryImage[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// =========================
+// GALLERY
+// =========================
+model GalleryImage {
+  id         String   @id @default(cuid())
+  imageUrl   String
+  eventId    String?
+  event      Event?  @relation(fields: [eventId], references: [id])
+
+  featured   Boolean @default(false)
+  highlight  Boolean @default(false)
+
+  createdAt  DateTime @default(now())
+}
+
+// =========================
+// TESTIMONIALS
+// =========================
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  message   String
+  rating    Float?
+  featured  Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+}
+
+// =========================
+// CONTACT FORM SUBMISSIONS
+// =========================
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  eventType String?
+  message   String
+  status    ContactStatus @default(NEW)
+
+  createdAt DateTime @default(now())
+}
+
+enum ContactStatus {
+  NEW
+  READ
+  REPLIED
+}
