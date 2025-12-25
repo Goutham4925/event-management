@@ -9,6 +9,7 @@ import testimonialRoutes from "./routes/testimonials.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
 import statsRoutes from "./routes/stats.routes.js";
 import userRoutes from "./routes/users.routes.js"; 
+import aboutRoutes from "./routes/about.route.js";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use(express.json());
 // API ROUTES
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/about", aboutRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/gallery", galleryRoutes);
 app.use("/api/testimonials", testimonialRoutes);

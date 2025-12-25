@@ -1,73 +1,250 @@
-# Welcome to your Lovable project
+🎉 Event Management Platform (Lovable + React + Node)
 
-## Project info
+A full-stack Event Management Platform built with React, TypeScript, Tailwind, Prisma, and PostgreSQL, featuring a powerful Admin Dashboard to manage events, gallery, testimonials, stats, users, and dynamic pages like About.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+🌐 Live Project
 
-## How can I edit this code?
+Lovable URL
+👉 https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
 
-There are several ways of editing your application.
+🚀 Tech Stack
+Frontend
 
-**Use Lovable**
+⚡ Vite
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+⚛️ React + TypeScript
 
-Changes made via Lovable will be committed automatically to this repo.
+🎨 Tailwind CSS
 
-**Use your preferred IDE**
+🧩 shadcn/ui
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+🎥 Framer Motion
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+🔐 React Router
 
-Follow these steps:
+🔔 Sonner / Toaster
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+Backend
+
+🟢 Node.js + Express
+
+🧬 Prisma ORM
+
+🐘 PostgreSQL (Aiven / Render)
+
+☁️ Cloudinary (Image uploads)
+
+📦 Multer (file middleware)
+
+🔐 JWT Authentication
+
+📁 Project Structure (High Level)
+frontend/
+ ├─ src/
+ │  ├─ pages/
+ │  │  ├─ public/        # Home, About, Works, Gallery, Testimonials
+ │  │  └─ admin/         # Dashboard, Events, Gallery, Stats, About, Users
+ │  ├─ components/
+ │  ├─ contexts/
+ │  ├─ lib/api.ts        # API helper
+ │  ├─ lib/iconMap.ts    # Dynamic icon resolver
+ │  └─ types/
+ │
+backend/
+ ├─ routes/
+ │  ├─ auth.route.js
+ │  ├─ events.route.js
+ │  ├─ gallery.route.js
+ │  ├─ testimonials.route.js
+ │  ├─ stats.route.js
+ │  ├─ about.route.js
+ │  └─ users.route.js
+ ├─ middlewares/
+ ├─ prisma/
+ └─ server.js
+
+🔐 Authentication & Roles
+User Roles
+
+ADMIN – Full access to admin dashboard
+
+USER – Public access only
+
+Auth Flow
+
+Admin logs in → JWT issued
+
+Token stored in localStorage
+
+Protected routes validated via middleware
+
+API calls attach token in headers
+
+🔌 API CALLING SYSTEM (IMPORTANT)
+Central API Helper – lib/api.ts
+export async function apiGet<T>(url: string): Promise<T> {
+  const res = await fetch(`${API_URL}${url}`);
+  return res.json();
+}
+
+export async function apiPut(url: string, body: any, token?: string) {
+  return fetch(`${API_URL}${url}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+
+✔ All frontend API calls go through this helper
+✔ Cleaner code
+✔ Easy auth handling
+
+📊 API ENDPOINTS OVERVIEW
+🔹 Events
+GET    /events
+POST   /events        (admin)
+PUT    /events/:id    (admin)
+DELETE /events/:id    (admin)
+
+🖼 Gallery
+GET    /gallery
+POST   /gallery/:eventId   (admin + upload)
+DELETE /gallery/:id        (admin)
+
+💬 Testimonials
+GET    /testimonials
+POST   /testimonials       (admin)
+DELETE /testimonials/:id   (admin)
+
+📈 Stats (Reusable on any page)
+GET    /stats?page=HOME | ABOUT | TESTIMONIALS
+POST   /stats              (admin)
+PUT    /stats/:id          (admin)
+DELETE /stats/:id          (admin)
+
+📖 About Page (Dedicated)
+GET    /about
+PUT    /about              (admin)
+POST   /about/upload-hero  (admin + image)
+
+👤 Users (Admin)
+GET    /users
+PUT    /users/:id/role
+PUT    /users/:id/status
+DELETE /users/:id
+
+🧠 Dynamic Pages Explained
+✅ About Page (Fully Dynamic)
+
+Hero Title & Subtitle
+
+Story Section
+
+Vision & Mission
+
+Values (icon + title + description)
+
+Years of Experience
+
+Stats (reused from Admin Stats)
+
+All content is controlled from Admin → About Page.
+
+🎯 Values Section (Dynamic Icons)
+
+Admin selects icon name → frontend resolves icon dynamically
+
+import * as Icons from "lucide-react";
+
+export const iconMap = {
+  Heart: Icons.Heart,
+  Award: Icons.Award,
+  Target: Icons.Target,
+  Eye: Icons.Eye,
+};
+
+☁️ Image Upload Flow (Cloudinary)
+
+Admin selects image
+
+Image sent using FormData
+
+Multer stores file in memory
+
+Cloudinary uploads image
+
+Secure URL saved to DB
+
+Frontend updates instantly
+
+✔ Used for:
+
+Event cover images
+
+Gallery images
+
+About page hero image
+
+🛠 How to Run Locally
+# Clone repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Install dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start frontend
 npm run dev
-```
 
-**Edit a file directly in GitHub**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Backend must be running separately with .env configured.
 
-**Use GitHub Codespaces**
+🌍 Deployment
+Frontend
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Deploy via Lovable → Share → Publish
 
-## What technologies are used for this project?
+Backend
 
-This project is built with:
+Render / Railway / VPS
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+PostgreSQL via Aiven / Supabase
 
-## How can I deploy this project?
+🔒 Environment Variables
+Frontend (.env)
+VITE_API_URL=http://localhost:5000/api
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+Backend (.env)
+DATABASE_URL=postgresql://...
+JWT_SECRET=...
+CLOUDINARY_URL=...
 
-## Can I connect a custom domain to my Lovable project?
+✅ Key Features Summary
 
-Yes, you can!
+✔ Admin Dashboard
+✔ Role-based access
+✔ Dynamic About Page
+✔ Event-wise Gallery
+✔ Featured Testimonials
+✔ Reusable Stats system
+✔ Cloudinary uploads
+✔ Modern UI / Animations
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+🧩 Future Enhancements
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+SEO meta editor per page
+
+Draft / publish mode
+
+Multi-language support
+
+Admin preview mode
+
+Audit logs
+
+👨‍💻 Maintained By
+
+Your Ineffable Design Solutions

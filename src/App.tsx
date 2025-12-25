@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
-// Public Pages
+// ================= PUBLIC PAGES =================
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Works from "./pages/Works";
@@ -16,7 +16,7 @@ import Testimonials from "./pages/Testimonials";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
-// Admin Pages
+// ================= ADMIN PAGES =================
 import AdminLogin from "./pages/admin/Login";
 import Dashboard from "./pages/admin/Dashboard";
 import ManageEvents from "./pages/admin/ManageEvents";
@@ -25,6 +25,7 @@ import ManageTestimonials from "./pages/admin/ManageTestimonials";
 import ManageSettings from "./pages/admin/ManageSettings";
 import AdminStats from "./pages/admin/Stats";
 import ManageUsers from "./pages/admin/ManageUsers";
+import ManageAbout from "./pages/admin/ManageAbout"; 
 
 const queryClient = new QueryClient();
 
@@ -108,7 +109,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            
+
             <Route
               path="/admin/users"
               element={
@@ -118,7 +119,17 @@ const App = () => (
               }
             />
 
-            {/* ================= REDIRECT /admin ================= */}
+            {/* ✅ NEW ABOUT PAGE ADMIN */}
+            <Route
+              path="/admin/about"
+              element={
+                <ProtectedRoute>
+                  <ManageAbout />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* ================= REDIRECT ================= */}
             <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
 
             {/* ================= 404 ================= */}

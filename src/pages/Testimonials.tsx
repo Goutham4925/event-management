@@ -1,13 +1,36 @@
-import { motion } from 'framer-motion';
-import Layout from '@/components/Layout';
-import SectionTitle from '@/components/SectionTitle';
-import TestimonialCard from '@/components/TestimonialCard';
-import { testimonials } from '@/data/mockData';
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+
+import Layout from "@/components/Layout";
+import SectionTitle from "@/components/SectionTitle";
+import TestimonialCard from "@/components/TestimonialCard";
+
+import { apiGet } from "@/lib/api";
+import { Testimonial } from "@/types/testimonial";
+import { Stat } from "@/types/stat";
 
 const Testimonials = () => {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [stats, setStats] = useState<Stat[]>([]);
+
+  /* ================= LOAD DATA ================= */
+  useEffect(() => {
+    async function loadData() {
+      const [ts, st] = await Promise.all([
+        apiGet<Testimonial[]>("/testimonials"),
+        apiGet<Stat[]>("/stats?page=TESTIMONIALS"),
+      ]);
+
+      setTestimonials(ts || []);
+      setStats(st || []);
+    }
+
+    loadData();
+  }, []);
+
   return (
     <Layout>
-      {/* Hero Section */}
+      {/* ================= HERO ================= */}
       <section className="pt-32 pb-20 bg-card">
         <div className="container mx-auto px-4">
           <motion.div
@@ -29,50 +52,58 @@ const Testimonials = () => {
         </div>
       </section>
 
-      {/* Testimonials Grid */}
+      {/* ================= TESTIMONIALS ================= */}
       <section className="py-24">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <TestimonialCard key={testimonial.id} testimonial={testimonial} index={index} />
+              <TestimonialCard
+                key={testimonial.id}
+                testimonial={testimonial}
+                index={index}
+              />
             ))}
           </div>
+
+          {testimonials.length === 0 && (
+            <p className="text-center text-muted-foreground mt-12">
+              No testimonials yet
+            </p>
+          )}
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="py-20 bg-card">
-        <div className="container mx-auto px-4">
-          <SectionTitle
-            subtitle="Our Track Record"
-            title="Numbers That Speak"
-          />
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-12">
-            {[
-              { value: '500+', label: 'Happy Clients' },
-              { value: '4.9', label: 'Average Rating' },
-              { value: '100%', label: 'Would Recommend' },
-              { value: '50+', label: 'Five-Star Reviews' },
-            ].map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="text-center"
-              >
-                <div className="text-4xl md:text-5xl font-serif font-bold text-gradient-gold mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-muted-foreground text-sm tracking-wide uppercase">
-                  {stat.label}
-                </div>
-              </motion.div>
-            ))}
+      {/* ================= STATS (FROM DB) ================= */}
+      {stats.length > 0 && (
+        <section className="py-20 bg-card">
+          <div className="container mx-auto px-4">
+            <SectionTitle
+              subtitle="Our Track Record"
+              title="Numbers That Speak"
+            />
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-12">
+              {stats.map((stat, index) => (
+                <motion.div
+                  key={stat.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="text-center"
+                >
+                  <div className="text-4xl md:text-5xl font-serif font-bold text-gradient-gold mb-2">
+                    {stat.value}
+                  </div>
+                  <div className="text-muted-foreground text-sm tracking-wide uppercase">
+                    {stat.label}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </Layout>
   );
 };

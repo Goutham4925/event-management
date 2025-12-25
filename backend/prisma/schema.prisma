@@ -77,6 +77,34 @@ model SiteSettings {
   updatedAt DateTime @updatedAt
 }
 
+// =========================
+// ABOUT PAGE (DEDICATED)
+// =========================
+model AboutPage {
+  id String @id @default("about")
+
+  heroTitle       String
+  heroSubtitle    String
+
+  storyTitle      String?
+  storyContent    String?
+
+  vision          String?
+  mission         String?
+
+  valuesSectionTitle    String?
+  valuesSectionSubtitle String?
+  values          Json? 
+
+  yearsExperience Int?
+  heroImage       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+
 
 // =========================
 // STATS (USED MULTIPLE PAGES)
