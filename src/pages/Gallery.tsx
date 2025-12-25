@@ -1,29 +1,45 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import Layout from '@/components/Layout';
-import Lightbox from '@/components/Lightbox';
-import { galleryImages } from '@/data/mockData';
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+
+import Layout from "@/components/Layout";
+import Lightbox from "@/components/Lightbox";
+import { apiGet } from "@/lib/api";
+
+/* =========================
+   TYPES
+========================= */
+type GalleryImage = {
+  id: string;
+  imageUrl: string;
+};
 
 const Gallery = () => {
+  const [images, setImages] = useState<GalleryImage[]>([]);
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
+  /* ================= LOAD IMAGES ================= */
+  useEffect(() => {
+    apiGet<GalleryImage[]>("/gallery").then(setImages);
+  }, []);
+
+  /* ================= LIGHTBOX ================= */
   const openLightbox = (index: number) => {
-    setCurrentImageIndex(index);
+    setCurrentIndex(index);
     setLightboxOpen(true);
   };
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % galleryImages.length);
+    setCurrentIndex((prev) => (prev + 1) % images.length);
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
   return (
     <Layout>
-      {/* Hero Section */}
+      {/* ================= HERO ================= */}
       <section className="pt-32 pb-20 bg-card">
         <div className="container mx-auto px-4">
           <motion.div
@@ -45,56 +61,67 @@ const Gallery = () => {
         </div>
       </section>
 
-      {/* Gallery Grid */}
+      {/* ================= GALLERY GRID ================= */}
       <section className="py-24">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {galleryImages.map((image, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: index * 0.05 }}
-                viewport={{ once: true }}
-                className={`relative overflow-hidden rounded-lg cursor-pointer group ${
-                  index % 5 === 0 ? 'md:col-span-2 md:row-span-2' : ''
-                }`}
-                onClick={() => openLightbox(index)}
-              >
-                <div className={`${index % 5 === 0 ? 'aspect-square' : 'aspect-[4/3]'}`}>
-                  <img
-                    src={image}
-                    alt={`Gallery image ${index + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                  />
-                </div>
-                <div className="absolute inset-0 bg-background/0 group-hover:bg-background/30 transition-colors duration-300 flex items-center justify-center">
-                  <div className="w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform scale-50 group-hover:scale-100">
-                    <svg
-                      className="w-5 h-5 text-primary-foreground"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
-                      />
-                    </svg>
+            {images.map((img, index) => {
+              const isFeatured = index % 5 === 0;
+
+              return (
+                <motion.div
+                  key={img.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: index * 0.05 }}
+                  viewport={{ once: true }}
+                  className={`relative overflow-hidden rounded-lg cursor-pointer group ${
+                    isFeatured ? "md:col-span-2 md:row-span-2" : ""
+                  }`}
+                  onClick={() => openLightbox(index)}
+                >
+                  {/* Aspect ratio */}
+                  <div
+                    className={
+                      isFeatured ? "aspect-square" : "aspect-[4/3]"
+                    }
+                  >
+                    <img
+                      src={img.imageUrl}
+                      alt={`Gallery image ${index + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
                   </div>
-                </div>
-              </motion.div>
-            ))}
+
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-background/0 group-hover:bg-background/30 transition-colors duration-300 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-50 group-hover:scale-100">
+                      <svg
+                        className="w-5 h-5 text-primary-foreground"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Lightbox */}
+      {/* ================= LIGHTBOX ================= */}
       <Lightbox
-        images={galleryImages}
-        currentIndex={currentImageIndex}
+        images={images.map((i) => i.imageUrl)}
+        currentIndex={currentIndex}
         isOpen={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
         onNext={nextImage}

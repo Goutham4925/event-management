@@ -6,16 +6,34 @@ import { protect } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-/* ================= ADD IMAGE TO EVENT ================= */
+/* ===============================
+   GET ALL GALLERY IMAGES (PUBLIC)
+================================ */
+router.get("/", async (_req, res) => {
+  const images = await prisma.galleryImage.findMany({
+    include: {
+      event: {
+        select: { id: true, title: true, category: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  res.json(images);
+});
+
+/* ===============================
+   ADD IMAGE TO EVENT (ADMIN)
+================================ */
 router.post(
   "/:eventId",
   protect,
   upload.single("image"),
   async (req, res) => {
-    const result = await cloudinary.uploader.upload_stream(
+    const stream = cloudinary.uploader.upload_stream(
       { folder: "events" },
       async (error, result) => {
-        if (error) throw error;
+        if (error) return res.status(500).json({ error: "Upload failed" });
 
         const image = await prisma.galleryImage.create({
           data: {
@@ -28,11 +46,13 @@ router.post(
       }
     );
 
-    result.end(req.file.buffer);
+    stream.end(req.file.buffer);
   }
 );
 
-/* ================= DELETE IMAGE ================= */
+/* ===============================
+   DELETE IMAGE (ADMIN)
+================================ */
 router.delete("/:id", protect, async (req, res) => {
   await prisma.galleryImage.delete({ where: { id: req.params.id } });
   res.json({ success: true });
