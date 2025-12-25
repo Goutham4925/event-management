@@ -57,6 +57,7 @@ const ManageEvents = () => {
     date: "",
     client: "",
     coverImage: "",
+    featured: false, // <-- added
   });
 
   /* ================= LOAD EVENTS ================= */
@@ -87,6 +88,7 @@ const ManageEvents = () => {
       date: "",
       client: "",
       coverImage: "",
+      featured: false,
     });
     setOpen(true);
   }
@@ -100,6 +102,7 @@ const ManageEvents = () => {
       date: event.date.slice(0, 10),
       client: event.client,
       coverImage: event.coverImage,
+      featured: !!event.featured, // populate featured
     });
     setOpen(true);
   }
@@ -109,7 +112,10 @@ const ManageEvents = () => {
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const target = e.target as HTMLInputElement;
+    const name = target.name;
+    const value = target.type === "checkbox" ? target.checked : target.value;
+    setForm((prev) => ({ ...prev, [name]: value }));
   }
 
   /* ================= IMAGE UPLOAD ================= */
@@ -164,6 +170,7 @@ const ManageEvents = () => {
       const payload = {
         ...form,
         date: new Date(form.date),
+        featured: !!form.featured,
       };
 
       if (editing) {
@@ -213,7 +220,6 @@ const ManageEvents = () => {
   return (
     <AdminLayout>
       <div className="space-y-8">
-
         {/* Header */}
         <div className="flex justify-between items-center">
           <h1 className="font-serif text-3xl font-bold">Manage Events</h1>
@@ -256,7 +262,16 @@ const ManageEvents = () => {
                         alt=""
                       />
                     )}
-                    {e.title}
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span>{e.title}</span>
+                        {e.featured && (
+                          <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
+                            Featured
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </td>
                   <td className="p-4">{e.category}</td>
                   <td className="p-4">
@@ -345,6 +360,18 @@ const ManageEvents = () => {
                 <option value="Corporate">Corporate</option>
                 <option value="Birthday">Birthday</option>
               </select>
+
+              {/* Featured toggle */}
+              <label className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  name="featured"
+                  checked={form.featured}
+                  onChange={handleChange}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm">Feature this event on homepage</span>
+              </label>
 
               {form.coverImage && (
                 <img

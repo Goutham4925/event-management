@@ -27,15 +27,18 @@ const Index = () => {
   useEffect(() => {
     async function loadHomeData() {
       try {
-        const [settings, ev, ts, st] = await Promise.all([
+        const [settings, allEvents, ts, st] = await Promise.all([
           apiGet<SiteSettings>("/settings"),
-          apiGet<Event[]>("/events?featured=true"),
+          apiGet<Event[]>("/events"), // ✅ FETCH ALL EVENTS
           apiGet<Testimonial[]>("/testimonials?featured=true"),
           apiGet<Stat[]>("/stats?page=HOME"),
         ]);
 
+        // ✅ OPTION A: FILTER FEATURED EVENTS HERE
+        const featuredEvents = allEvents.filter((e) => e.featured);
+
         setSiteSettings(settings);
-        setEvents(ev || []);
+        setEvents(featuredEvents);
         setTestimonials(ts || []);
         setStats(st || []);
       } catch (err) {
@@ -142,11 +145,17 @@ const Index = () => {
             description={siteSettings.portfolioDescription}
           />
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {events.map((event, index) => (
-              <EventCard key={event.id} event={event} index={index} />
-            ))}
-          </div>
+          {events.length === 0 ? (
+            <p className="text-center text-muted-foreground py-12">
+              No featured events yet
+            </p>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+              {events.map((event, index) => (
+                <EventCard key={event.id} event={event} index={index} />
+              ))}
+            </div>
+          )}
 
           <div className="text-center">
             <Link to="/works">
@@ -161,7 +170,6 @@ const Index = () => {
       {/* ================= ABOUT ================= */}
       <section className="py-24 bg-card">
         <div className="container mx-auto px-4 grid lg:grid-cols-2 gap-16 items-center">
-          {/* TEXT */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -183,7 +191,6 @@ const Index = () => {
             </Link>
           </motion.div>
 
-          {/* IMAGES */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -194,7 +201,6 @@ const Index = () => {
               <div className="aspect-[3/4] rounded-lg overflow-hidden">
                 <img
                   src={siteSettings.aboutImage1}
-                  alt="About image 1"
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                 />
               </div>
@@ -204,7 +210,6 @@ const Index = () => {
               <div className="aspect-[3/4] rounded-lg overflow-hidden mt-8">
                 <img
                   src={siteSettings.aboutImage2}
-                  alt="About image 2"
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                 />
               </div>
@@ -221,7 +226,7 @@ const Index = () => {
             title={siteSettings.testimonialSubtitle}
           />
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {testimonials.map((t, i) => (
               <TestimonialCard key={t.id} testimonial={t} index={i} />
             ))}
