@@ -22,6 +22,31 @@ router.get("/", async (_req, res) => {
   }
 });
 
+
+/* ===============================
+   GET SINGLE EVENT (PUBLIC)
+================================ */
+router.get("/:id", async (req, res) => {
+  try {
+    const event = await prisma.event.findUnique({
+      where: { id: req.params.id },
+      include: {
+        gallery: true,
+      },
+    });
+
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    res.json(event);
+  } catch (err) {
+    console.error("GET /events/:id error:", err);
+    res.status(500).json({ error: "Failed to fetch event" });
+  }
+});
+
+
 /* ===============================
    UPLOAD EVENT COVER (ADMIN)
 ================================ */

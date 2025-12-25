@@ -1,64 +1,102 @@
-import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Calendar, User, ArrowLeft, ArrowRight } from 'lucide-react';
-import Layout from '@/components/Layout';
-import Lightbox from '@/components/Lightbox';
-import { Button } from '@/components/ui/button';
-import { events } from '@/data/mockData';
+import { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Calendar, User, ArrowLeft, ArrowRight } from "lucide-react";
+
+import Layout from "@/components/Layout";
+import Lightbox from "@/components/Lightbox";
+import { Button } from "@/components/ui/button";
+import { apiGet } from "@/lib/api";
+import { Event } from "@/types/event";
 
 const EventDetails = () => {
   const { id } = useParams<{ id: string }>();
+
+  const [events, setEvents] = useState<Event[]>([]);
+  const [event, setEvent] = useState<Event | null>(null);
+  const [loading, setLoading] = useState(true);
+
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const event = events.find(e => e.id === id);
+  /* ================= LOAD EVENTS ================= */
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const allEvents = await apiGet<Event[]>("/events");
+        setEvents(allEvents);
 
-  if (!event) {
+        const found = allEvents.find((e) => e.id === id);
+        setEvent(found || null);
+      } catch (err) {
+        console.error("Failed to load event", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
+  }, [id]);
+
+  if (loading) {
     return (
       <Layout>
         <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <h1 className="font-serif text-4xl font-bold text-foreground mb-4">Event Not Found</h1>
-            <Link to="/works">
-              <Button variant="gold-outline">
-                <ArrowLeft size={18} />
-                Back to Works
-              </Button>
-            </Link>
-          </div>
+          <p className="text-muted-foreground">Loading event…</p>
         </div>
       </Layout>
     );
   }
 
-  const formattedDate = new Date(event.date).toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
+  if (!event) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center text-center">
+          <h1 className="font-serif text-4xl font-bold mb-4">Event Not Found</h1>
+          <Link to="/works">
+            <Button variant="gold-outline">
+              <ArrowLeft size={18} />
+              Back to Works
+            </Button>
+          </Link>
+        </div>
+      </Layout>
+    );
+  }
+
+  const formattedDate = new Date(event.date).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
   });
 
+  /* ================= PREV / NEXT ================= */
+  const currentIndex = events.findIndex((e) => e.id === event.id);
+  const prevEvent = currentIndex > 0 ? events[currentIndex - 1] : null;
+  const nextEvent =
+    currentIndex < events.length - 1 ? events[currentIndex + 1] : null;
+
+  /* ================= LIGHTBOX ================= */
   const openLightbox = (index: number) => {
     setCurrentImageIndex(index);
     setLightboxOpen(true);
   };
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % event.gallery.length);
+    setCurrentImageIndex(
+      (prev) => (prev + 1) % event.gallery.length
+    );
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + event.gallery.length) % event.gallery.length);
+    setCurrentImageIndex(
+      (prev) => (prev - 1 + event.gallery.length) % event.gallery.length
+    );
   };
-
-  // Find next and previous events
-  const currentIndex = events.findIndex(e => e.id === id);
-  const prevEvent = events[currentIndex - 1];
-  const nextEvent = events[currentIndex + 1];
 
   return (
     <Layout>
-      {/* Hero Image */}
+      {/* ================= HERO ================= */}
       <section className="relative h-[70vh] min-h-[500px]">
         <img
           src={event.coverImage}
@@ -66,7 +104,7 @@ const EventDetails = () => {
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-hero" />
-        
+
         <div className="absolute inset-0 flex items-end">
           <div className="container mx-auto px-4 pb-16">
             <motion.div
@@ -74,20 +112,22 @@ const EventDetails = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <span className="inline-block px-4 py-1 text-xs font-medium tracking-wider uppercase bg-primary text-primary-foreground rounded-full mb-4">
+              <span className="inline-block px-4 py-1 text-xs uppercase bg-primary text-primary-foreground rounded-full mb-4">
                 {event.category}
               </span>
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4">
+
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
                 {event.title}
               </h1>
+
               <div className="flex flex-wrap items-center gap-6 text-foreground/80">
                 <div className="flex items-center gap-2">
                   <Calendar size={18} />
-                  <span>{formattedDate}</span>
+                  {formattedDate}
                 </div>
                 <div className="flex items-center gap-2">
                   <User size={18} />
-                  <span>{event.client}</span>
+                  {event.client}
                 </div>
               </div>
             </motion.div>
@@ -95,88 +135,90 @@ const EventDetails = () => {
         </div>
       </section>
 
-      {/* Content */}
+      {/* ================= CONTENT ================= */}
       <section className="py-24">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
-              <h2 className="font-serif text-2xl font-bold text-foreground mb-6">
-                About This Event
-              </h2>
-              <p className="text-muted-foreground text-lg leading-relaxed mb-12">
-                {event.description}
-              </p>
-            </motion.div>
-          </div>
+        <div className="container mx-auto px-4 max-w-3xl">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            <h2 className="font-serif text-2xl font-bold mb-6">
+              About This Event
+            </h2>
+            <p className="text-muted-foreground text-lg leading-relaxed mb-12">
+              {event.description}
+            </p>
+          </motion.div>
+        </div>
 
-          {/* Gallery */}
+        {/* ================= GALLERY ================= */}
+        {event.gallery.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
+            className="container mx-auto px-4"
           >
-            <h2 className="font-serif text-2xl font-bold text-foreground mb-8 text-center">
+            <h2 className="font-serif text-2xl font-bold text-center mb-8">
               Event Gallery
             </h2>
+
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {event.gallery.map((image, index) => (
+              {event.gallery.map((img, index) => (
                 <div
-                  key={index}
+                  key={img.id}
                   className="aspect-[4/3] rounded-lg overflow-hidden cursor-pointer group"
                   onClick={() => openLightbox(index)}
                 >
                   <img
-                    src={image}
-                    alt={`${event.title} gallery image ${index + 1}`}
+                    src={img.imageUrl}
+                    alt=""
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </div>
               ))}
             </div>
           </motion.div>
+        )}
 
-          {/* Navigation */}
-          <div className="mt-20 pt-12 border-t border-border">
-            <div className="flex justify-between items-center">
-              {prevEvent ? (
-                <Link to={`/works/${prevEvent.id}`}>
-                  <Button variant="ghost" className="gap-2">
-                    <ArrowLeft size={18} />
-                    <span className="hidden sm:inline">Previous Event</span>
-                  </Button>
-                </Link>
-              ) : (
-                <div />
-              )}
-              
-              <Link to="/works">
-                <Button variant="gold-outline">
-                  View All Events
+        {/* ================= NAVIGATION ================= */}
+        <div className="mt-20 pt-12 border-t border-border">
+          <div className="container mx-auto px-4 flex justify-between items-center">
+            {prevEvent ? (
+              <Link to={`/works/${prevEvent.id}`}>
+                <Button variant="ghost" className="gap-2">
+                  <ArrowLeft size={18} />
+                  <span className="hidden sm:inline">Previous Event</span>
                 </Button>
               </Link>
+            ) : (
+              <div />
+            )}
 
-              {nextEvent ? (
-                <Link to={`/works/${nextEvent.id}`}>
-                  <Button variant="ghost" className="gap-2">
-                    <span className="hidden sm:inline">Next Event</span>
-                    <ArrowRight size={18} />
-                  </Button>
-                </Link>
-              ) : (
-                <div />
-              )}
-            </div>
+            <Link to="/works">
+              <Button variant="gold-outline">
+                View All Events
+              </Button>
+            </Link>
+
+            {nextEvent ? (
+              <Link to={`/works/${nextEvent.id}`}>
+                <Button variant="ghost" className="gap-2">
+                  <span className="hidden sm:inline">Next Event</span>
+                  <ArrowRight size={18} />
+                </Button>
+              </Link>
+            ) : (
+              <div />
+            )}
           </div>
         </div>
       </section>
 
-      {/* Lightbox */}
+      {/* ================= LIGHTBOX ================= */}
       <Lightbox
-        images={event.gallery}
+        images={event.gallery.map((g) => g.imageUrl)}
         currentIndex={currentImageIndex}
         isOpen={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
