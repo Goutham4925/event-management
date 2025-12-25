@@ -1,91 +1,93 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 
-interface Admin {
-  id: string;
+/* ================= TYPES ================= */
+export type AuthUser = {
+  id?: string;
   email: string;
-}
-
-interface AuthContextType {
-  admin: Admin | null;
-  isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  isLoading: boolean;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  role: "ADMIN" | "USER";
 };
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
+type AuthContextType = {
+  user: AuthUser | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  loginSuccess: (token: string, user: AuthUser) => void;
+  logout: () => void;
+};
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [admin, setAdmin] = useState<Admin | null>(null);
+/* ================= CONTEXT ================= */
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+/* ================= PROVIDER ================= */
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  /* ================= LOAD AUTH ON APP START ================= */
   useEffect(() => {
-    // Check for existing session
-    const storedAdmin = localStorage.getItem('admin');
-    const token = localStorage.getItem('token');
-    
-    if (storedAdmin && token) {
-      setAdmin(JSON.parse(storedAdmin));
+    try {
+      const token = localStorage.getItem("token");
+      const storedUser = localStorage.getItem("user");
+
+      if (token && storedUser) {
+        const parsedUser: AuthUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        setIsAuthenticated(true);
+      }
+    } catch (err) {
+      console.error("Failed to restore auth session", err);
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
-    
-    // Simulated auth - in production, this would call your backend API
-    // Demo credentials: admin@example.com / password123
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    if (email === 'admin@example.com' && password === 'password123') {
-      const adminData: Admin = {
-        id: '1',
-        email: email,
-      };
-      
-      // Simulated JWT token
-      const fakeToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.demo';
-      
-      localStorage.setItem('admin', JSON.stringify(adminData));
-      localStorage.setItem('token', fakeToken);
-      setAdmin(adminData);
-      setIsLoading(false);
-      return true;
-    }
-    
-    setIsLoading(false);
-    return false;
+  /* ================= LOGIN ================= */
+  const loginSuccess = (token: string, userData: AuthUser) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(userData));
+
+    setUser(userData);
+    setIsAuthenticated(true);
   };
 
+  /* ================= LOGOUT ================= */
   const logout = () => {
-    localStorage.removeItem('admin');
-    localStorage.removeItem('token');
-    setAdmin(null);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    setUser(null);
+    setIsAuthenticated(false);
   };
 
   return (
     <AuthContext.Provider
       value={{
-        admin,
-        isAuthenticated: !!admin,
-        login,
-        logout,
+        user,
+        isAuthenticated,
         isLoading,
+        loginSuccess,
+        logout,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
+};
+
+/* ================= HOOK ================= */
+export const useAuth = (): AuthContextType => {
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    throw new Error("useAuth must be used inside AuthProvider");
+  }
+  return ctx;
 };

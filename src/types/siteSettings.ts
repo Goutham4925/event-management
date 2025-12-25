@@ -8,10 +8,10 @@ export interface SiteSettings {
   heroImage: string;
 
   // About
-  aboutHeading: string;
-  aboutText: string;
-  vision: string;
-  mission: string;
+    aboutHeading: string;
+    aboutText: string;
+    aboutImage1: string;    
+    aboutImage2: string;
 
   // Portfolio
   portfolioTitle: string;

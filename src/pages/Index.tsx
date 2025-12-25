@@ -42,6 +42,7 @@ const Index = () => {
         console.error("Failed to load home data", err);
       }
     }
+
     loadHomeData();
   }, []);
 
@@ -91,25 +92,18 @@ const Index = () => {
 
             <div className="flex gap-4 justify-center">
               <Link to="/works">
-                <Button variant="hero" size="xl">View Our Work</Button>
+                <Button variant="hero" size="xl">
+                  View Our Work
+                </Button>
               </Link>
               <Link to="/contact">
-                <Button variant="hero-outline" size="xl">Get in Touch</Button>
+                <Button variant="hero-outline" size="xl">
+                  Get in Touch
+                </Button>
               </Link>
             </div>
           </motion.div>
         </div>
-
-        {/* Scroll indicator */}
-        <motion.div
-          animate={{ opacity: [0, 1, 0] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2"
-        >
-          <div className="w-6 h-10 rounded-full border-2 border-foreground/30 flex justify-center">
-            <div className="w-1 h-2 bg-primary mt-2 rounded-full" />
-          </div>
-        </motion.div>
       </section>
 
       {/* ================= STATS ================= */}
@@ -139,7 +133,6 @@ const Index = () => {
         </section>
       )}
 
-
       {/* ================= FEATURED EVENTS ================= */}
       <section className="py-24">
         <div className="container mx-auto px-4">
@@ -168,7 +161,12 @@ const Index = () => {
       {/* ================= ABOUT ================= */}
       <section className="py-24 bg-card">
         <div className="container mx-auto px-4 grid lg:grid-cols-2 gap-16 items-center">
-          <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }}>
+          {/* TEXT */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+          >
             <span className="text-primary uppercase tracking-widest text-sm block mb-3">
               About Us
             </span>
@@ -184,6 +182,34 @@ const Index = () => {
               </Button>
             </Link>
           </motion.div>
+
+          {/* IMAGES */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="grid grid-cols-2 gap-4"
+          >
+            {siteSettings.aboutImage1 && (
+              <div className="aspect-[3/4] rounded-lg overflow-hidden">
+                <img
+                  src={siteSettings.aboutImage1}
+                  alt="About image 1"
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+            )}
+
+            {siteSettings.aboutImage2 && (
+              <div className="aspect-[3/4] rounded-lg overflow-hidden mt-8">
+                <img
+                  src={siteSettings.aboutImage2}
+                  alt="About image 2"
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+            )}
+          </motion.div>
         </div>
       </section>
 
@@ -194,6 +220,7 @@ const Index = () => {
             subtitle={siteSettings.testimonialTitle}
             title={siteSettings.testimonialSubtitle}
           />
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
             {testimonials.map((t, i) => (
               <TestimonialCard key={t.id} testimonial={t} index={i} />

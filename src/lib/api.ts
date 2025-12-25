@@ -2,64 +2,86 @@ const API_URL =
   import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
 /* ===============================
-   GET (PUBLIC)
+   INTERNAL RESPONSE HANDLER
 ================================ */
-export async function apiGet<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`);
+async function handleResponse<T>(res: Response): Promise<T> {
+  let data: any = null;
 
-  if (!res.ok) {
-    throw new Error("API error");
+  try {
+    data = await res.json();
+  } catch {
+    // ignore non-json responses
   }
 
-  return res.json();
+  if (!res.ok) {
+    throw new Error(data?.error || data?.message || "API error");
+  }
+
+  return data;
 }
 
 /* ===============================
-   POST (ADMIN)
+   GET (PUBLIC – NO AUTH)
+================================ */
+export async function apiGet<T>(path: string): Promise<T> {
+  const res = await fetch(`${API_URL}${path}`);
+  return handleResponse<T>(res);
+}
+
+/* ===============================
+   GET (ADMIN – AUTH REQUIRED)
+================================ */
+export async function apiGetAuth<T>(
+  path: string,
+  token: string
+): Promise<T> {
+  const res = await fetch(`${API_URL}${path}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return handleResponse<T>(res);
+}
+
+/* ===============================
+   POST (ADMIN – JSON)
 ================================ */
 export async function apiPost<T>(
   path: string,
   body: any,
-  token?: string
+  token: string
 ): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(body),
   });
 
-  if (!res.ok) {
-    throw new Error("API error");
-  }
-
-  return res.json();
+  return handleResponse<T>(res);
 }
 
 /* ===============================
-   PUT (ADMIN)
+   PUT (ADMIN – JSON)
 ================================ */
 export async function apiPut<T>(
   path: string,
   body: any,
-  token?: string
+  token: string
 ): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(body),
   });
 
-  if (!res.ok) {
-    throw new Error("API error");
-  }
-
-  return res.json();
+  return handleResponse<T>(res);
 }
 
 /* ===============================
@@ -67,16 +89,39 @@ export async function apiPut<T>(
 ================================ */
 export async function apiDelete(
   path: string,
-  token?: string
+  token: string
 ): Promise<void> {
   const res = await fetch(`${API_URL}${path}`, {
     method: "DELETE",
     headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      Authorization: `Bearer ${token}`,
     },
   });
 
   if (!res.ok) {
     throw new Error("API error");
   }
+}
+
+/* ===============================
+   FILE UPLOAD (ADMIN – FormData)
+   ✔ Hero images
+   ✔ Event cover
+   ✔ Gallery images
+================================ */
+export async function apiUpload<T>(
+  path: string,
+  formData: FormData,
+  token: string
+): Promise<T> {
+  const res = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      // ❌ DO NOT set Content-Type manually
+    },
+    body: formData,
+  });
+
+  return handleResponse<T>(res);
 }

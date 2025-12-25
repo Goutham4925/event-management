@@ -11,43 +11,28 @@ import { apiGet, apiPut } from "@/lib/api";
 import { SiteSettings } from "@/types/siteSettings";
 
 /* =====================================================
-   FORM SHAPE (FLAT FOR UI)
+   FORM SHAPE
 ===================================================== */
 type SettingsForm = {
-  // Hero
   heroBadge: string;
   heroTitle: string;
   heroSubtitle: string;
   heroImage: string;
 
-  // About
   aboutHeading: string;
   aboutText: string;
+  aboutImage1: string;
+  aboutImage2: string;
 
-
-  // Portfolio
   portfolioTitle: string;
   portfolioSubtitle: string;
   portfolioDescription: string;
 
-  // Testimonials
   testimonialTitle: string;
   testimonialSubtitle: string;
 
-  // CTA
   ctaTitle: string;
   ctaSubtitle: string;
-
-  // Contact
-  contactEmail: string;
-  contactPhone: string;
-  address: string;
-
-  // Social
-  facebook: string;
-  instagram: string;
-  twitter: string;
-  linkedin: string;
 };
 
 const emptySettings: SettingsForm = {
@@ -58,7 +43,8 @@ const emptySettings: SettingsForm = {
 
   aboutHeading: "",
   aboutText: "",
-
+  aboutImage1: "",
+  aboutImage2: "",
 
   portfolioTitle: "",
   portfolioSubtitle: "",
@@ -69,26 +55,16 @@ const emptySettings: SettingsForm = {
 
   ctaTitle: "",
   ctaSubtitle: "",
-
-  contactEmail: "",
-  contactPhone: "",
-  address: "",
-
-  facebook: "",
-  instagram: "",
-  twitter: "",
-  linkedin: "",
 };
 
 const ManageSettings = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [settings, setSettings] = useState<SettingsForm>(emptySettings);
 
-  /* =====================================================
-     LOAD SETTINGS
-  ===================================================== */
+  /* ================= LOAD SETTINGS ================= */
   useEffect(() => {
     async function loadSettings() {
       try {
@@ -102,6 +78,8 @@ const ManageSettings = () => {
 
           aboutHeading: data.aboutHeading ?? "",
           aboutText: data.aboutText ?? "",
+          aboutImage1: data.aboutImage1 ?? "",
+          aboutImage2: data.aboutImage2 ?? "",
 
           portfolioTitle: data.portfolioTitle ?? "",
           portfolioSubtitle: data.portfolioSubtitle ?? "",
@@ -112,15 +90,6 @@ const ManageSettings = () => {
 
           ctaTitle: data.ctaTitle ?? "",
           ctaSubtitle: data.ctaSubtitle ?? "",
-
-          contactEmail: data.contactEmail ?? "",
-          contactPhone: data.contactPhone ?? "",
-          address: data.address ?? "",
-
-          facebook: (data.socialLinks as any)?.facebook ?? "",
-          instagram: (data.socialLinks as any)?.instagram ?? "",
-          twitter: (data.socialLinks as any)?.twitter ?? "",
-          linkedin: (data.socialLinks as any)?.linkedin ?? "",
         });
       } catch {
         toast({
@@ -136,9 +105,7 @@ const ManageSettings = () => {
     loadSettings();
   }, [toast]);
 
-  /* =====================================================
-     HANDLE CHANGE
-  ===================================================== */
+  /* ================= TEXT CHANGE ================= */
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -146,9 +113,55 @@ const ManageSettings = () => {
     setSettings((prev) => ({ ...prev, [name]: value }));
   };
 
-  /* =====================================================
-     SAVE SETTINGS
-  ===================================================== */
+  /* ================= IMAGE UPLOAD HANDLER ================= */
+  const uploadImage = async (
+    file: File,
+    endpoint: string,
+    field: "heroImage" | "aboutImage1" | "aboutImage2"
+  ) => {
+    setIsUploading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/settings/${endpoint}`,
+        {
+          method: "POST",
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: formData,
+        }
+      );
+
+      if (!res.ok) throw new Error("Upload failed");
+
+      const updated = await res.json();
+
+      setSettings((prev) => ({
+        ...prev,
+        [field]: updated[field],
+      }));
+
+      toast({
+        title: "Image uploaded",
+        description: "Image updated successfully",
+      });
+    } catch {
+      toast({
+        title: "Upload failed",
+        description: "Could not upload image",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  /* ================= SAVE TEXT SETTINGS ================= */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -162,7 +175,6 @@ const ManageSettings = () => {
           heroBadge: settings.heroBadge,
           heroTitle: settings.heroTitle,
           heroSubtitle: settings.heroSubtitle,
-          heroImage: settings.heroImage,
 
           aboutHeading: settings.aboutHeading,
           aboutText: settings.aboutText,
@@ -176,25 +188,13 @@ const ManageSettings = () => {
 
           ctaTitle: settings.ctaTitle,
           ctaSubtitle: settings.ctaSubtitle,
-
-          contactEmail: settings.contactEmail,
-          contactPhone: settings.contactPhone,
-          address: settings.address,
-
-          socialLinks: {
-            facebook: settings.facebook,
-            instagram: settings.instagram,
-            twitter: settings.twitter,
-            linkedin: settings.linkedin,
-          },
         },
         token || undefined
       );
 
-
       toast({
         title: "Saved",
-        description: "Site settings updated successfully",
+        description: "Settings updated successfully",
       });
     } catch {
       toast({
@@ -213,45 +213,81 @@ const ManageSettings = () => {
     <AdminLayout>
       <form onSubmit={handleSubmit} className="max-w-4xl space-y-8">
 
+        {/* HERO */}
         <Section title="Hero Section">
           <Input name="heroBadge" value={settings.heroBadge} onChange={handleChange} />
           <Input name="heroTitle" value={settings.heroTitle} onChange={handleChange} />
           <Textarea name="heroSubtitle" value={settings.heroSubtitle} onChange={handleChange} />
-          <Input name="heroImage" value={settings.heroImage} onChange={handleChange} />
+
+          {settings.heroImage && (
+            <img src={settings.heroImage} className="rounded-lg max-h-56 object-cover" />
+          )}
+
+          <Input
+            type="file"
+            accept="image/*"
+            onChange={(e) =>
+              e.target.files &&
+              uploadImage(e.target.files[0], "hero-image", "heroImage")
+            }
+          />
         </Section>
 
+        {/* ABOUT */}
         <Section title="About Section">
           <Input name="aboutHeading" value={settings.aboutHeading} onChange={handleChange} />
           <Textarea name="aboutText" value={settings.aboutText} onChange={handleChange} />
+
+          <div className="grid grid-cols-2 gap-4">
+            {[1, 2].map((i) => {
+              const field = i === 1 ? "aboutImage1" : "aboutImage2";
+              return (
+                <div key={i} className="space-y-2">
+                  {settings[field] && (
+                    <img
+                      src={settings[field]}
+                      className="rounded-lg h-40 w-full object-cover"
+                    />
+                  )}
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) =>
+                      e.target.files &&
+                      uploadImage(
+                        e.target.files[0],
+                        `about-image-${i}`,
+                        field as any
+                      )
+                    }
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          {isUploading && (
+            <p className="text-sm text-muted-foreground">Uploading image…</p>
+          )}
         </Section>
 
+        {/* PORTFOLIO */}
         <Section title="Portfolio Section">
           <Input name="portfolioTitle" value={settings.portfolioTitle} onChange={handleChange} />
           <Input name="portfolioSubtitle" value={settings.portfolioSubtitle} onChange={handleChange} />
           <Textarea name="portfolioDescription" value={settings.portfolioDescription} onChange={handleChange} />
         </Section>
 
+        {/* TESTIMONIAL */}
         <Section title="Testimonials Section">
           <Input name="testimonialTitle" value={settings.testimonialTitle} onChange={handleChange} />
           <Textarea name="testimonialSubtitle" value={settings.testimonialSubtitle} onChange={handleChange} />
         </Section>
 
+        {/* CTA */}
         <Section title="CTA Section">
           <Input name="ctaTitle" value={settings.ctaTitle} onChange={handleChange} />
           <Textarea name="ctaSubtitle" value={settings.ctaSubtitle} onChange={handleChange} />
-        </Section>
-
-        <Section title="Contact Information">
-          <Input name="contactEmail" value={settings.contactEmail} onChange={handleChange} />
-          <Input name="contactPhone" value={settings.contactPhone} onChange={handleChange} />
-          <Textarea name="address" value={settings.address} onChange={handleChange} />
-        </Section>
-
-        <Section title="Social Links">
-          <Input name="facebook" value={settings.facebook} onChange={handleChange} />
-          <Input name="instagram" value={settings.instagram} onChange={handleChange} />
-          <Input name="twitter" value={settings.twitter} onChange={handleChange} />
-          <Input name="linkedin" value={settings.linkedin} onChange={handleChange} />
         </Section>
 
         <div className="flex justify-end">

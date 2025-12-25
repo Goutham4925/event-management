@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -24,7 +24,7 @@ import ManageGallery from "./pages/admin/ManageGallery";
 import ManageTestimonials from "./pages/admin/ManageTestimonials";
 import ManageSettings from "./pages/admin/ManageSettings";
 import AdminStats from "./pages/admin/Stats";
-
+import ManageUsers from "./pages/admin/ManageUsers";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +34,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+
         <BrowserRouter
           future={{
             v7_startTransition: true,
@@ -41,7 +42,7 @@ const App = () => (
           }}
         >
           <Routes>
-            {/* Public Routes */}
+            {/* ================= PUBLIC ================= */}
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<About />} />
             <Route path="/works" element={<Works />} />
@@ -50,8 +51,10 @@ const App = () => (
             <Route path="/testimonials" element={<Testimonials />} />
             <Route path="/contact" element={<Contact />} />
 
-            {/* Admin Routes */}
-            <Route path="/admin" element={<AdminLogin />} />
+            {/* ================= ADMIN LOGIN ================= */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+
+            {/* ================= ADMIN (PROTECTED) ================= */}
             <Route
               path="/admin/dashboard"
               element={
@@ -60,6 +63,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/admin/events"
               element={
@@ -68,6 +72,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/admin/gallery"
               element={
@@ -76,6 +81,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/admin/testimonials"
               element={
@@ -84,6 +90,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/admin/settings"
               element={
@@ -92,6 +99,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/admin/stats"
               element={
@@ -100,12 +108,23 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute>
+                  <ManageUsers />
+                </ProtectedRoute>
+              }
+            />
 
+            {/* ================= REDIRECT /admin ================= */}
+            <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
 
+            {/* ================= 404 ================= */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>

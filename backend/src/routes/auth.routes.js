@@ -1,29 +1,78 @@
 import express from "express";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import prisma from "../config/db.js";
+import { signToken } from "../utils/jwt.js";
 
 const router = express.Router();
 
-/**
- * POST /api/auth/login
- */
+/* ===============================
+   REGISTER (PUBLIC)
+================================ */
+router.post("/register", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const exists = await prisma.user.findUnique({ where: { email } });
+    if (exists) {
+      return res.status(400).json({ error: "Email already registered" });
+    }
+
+    const hashed = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashed,
+        status: "PENDING",
+        role: "USER",
+      },
+    });
+
+    res.json({
+      message: "Account created. Await admin approval.",
+    });
+  } catch (err) {
+    console.error("REGISTER error:", err);
+    res.status(500).json({ error: "Registration failed" });
+  }
+});
+
+/* ===============================
+   LOGIN (PUBLIC)
+================================ */
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  const admin = await prisma.admin.findUnique({ where: { email } });
-  if (!admin) return res.status(401).json({ message: "Invalid credentials" });
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
 
-  const valid = await bcrypt.compare(password, admin.password);
-  if (!valid) return res.status(401).json({ message: "Invalid credentials" });
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
 
-  const token = jwt.sign(
-    { id: admin.id, email: admin.email },
-    process.env.JWT_SECRET,
-    { expiresIn: "7d" }
-  );
+    if (user.status !== "APPROVED") {
+      return res.status(403).json({
+        error:
+          user.status === "PENDING"
+            ? "Account awaiting admin approval"
+            : "Account blocked",
+      });
+    }
 
-  res.json({ token });
+    const token = signToken(user);
+
+    res.json({
+      token,
+      role: user.role,
+    });
+  } catch (err) {
+    console.error("LOGIN error:", err);
+    res.status(500).json({ error: "Login failed" });
+  }
 });
 
 export default router;
