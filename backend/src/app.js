@@ -10,6 +10,7 @@ import settingsRoutes from "./routes/settings.routes.js";
 import statsRoutes from "./routes/stats.routes.js";
 import userRoutes from "./routes/users.routes.js"; 
 import aboutRoutes from "./routes/about.route.js";
+import contactRoutes from "./routes/contact.route.js";
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use("/api/about", aboutRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/gallery", galleryRoutes);
 app.use("/api/testimonials", testimonialRoutes);
+app.use("/api/contact", contactRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/stats", statsRoutes); 
 

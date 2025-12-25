@@ -12,6 +12,7 @@ import {
   BarChart3,
   Users,
   Info,
+  Mail,
 } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,6 +30,7 @@ const navItems = [
   { name: "Gallery", path: "/admin/gallery", icon: Image },
   { name: "Testimonials", path: "/admin/testimonials", icon: MessageSquare },
   { name: "About", path: "/admin/about", icon: Info },
+  { name: "Messages", path: "/admin/messages", icon: Mail },
   { name: "Settings", path: "/admin/settings", icon: Settings },
 ];
 

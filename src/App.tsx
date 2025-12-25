@@ -26,6 +26,7 @@ import ManageSettings from "./pages/admin/ManageSettings";
 import AdminStats from "./pages/admin/Stats";
 import ManageUsers from "./pages/admin/ManageUsers";
 import ManageAbout from "./pages/admin/ManageAbout"; 
+import ManageMessages from "./pages/admin/ManageMessages";
 
 const queryClient = new QueryClient();
 
@@ -125,6 +126,15 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ManageAbout />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/messages"
+              element={
+                <ProtectedRoute>
+                  <ManageMessages />
                 </ProtectedRoute>
               }
             />

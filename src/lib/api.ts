@@ -45,6 +45,26 @@ export async function apiGetAuth<T>(
 }
 
 /* ===============================
+   POST (PUBLIC – JSON)
+   ✔ Contact form
+   ✔ Newsletter
+================================ */
+export async function apiPostPublic<T>(
+  path: string,
+  body: any
+): Promise<T> {
+  const res = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  return handleResponse<T>(res);
+}
+
+/* ===============================
    POST (ADMIN – JSON)
 ================================ */
 export async function apiPost<T>(
@@ -105,9 +125,6 @@ export async function apiDelete(
 
 /* ===============================
    FILE UPLOAD (ADMIN – FormData)
-   ✔ Hero images
-   ✔ Event cover
-   ✔ Gallery images
 ================================ */
 export async function apiUpload<T>(
   path: string,
