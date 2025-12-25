@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Lock, Mail, Eye, EyeOff } from "lucide-react";
+import { Lock, Mail, Eye, EyeOff, UserPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,12 +14,12 @@ const API_URL =
 const AdminLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  // ✅ HOOK MUST BE HERE
   const { loginSuccess } = useAuth();
 
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [mode, setMode] = useState<"login" | "signup">("login");
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -36,7 +36,10 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_URL}/auth/login`, {
+      const endpoint =
+        mode === "login" ? "/auth/login" : "/auth/register";
+
+      const res = await fetch(`${API_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -45,21 +48,35 @@ const AdminLogin = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data?.error || "Login failed");
+        throw new Error(data?.error || "Request failed");
       }
 
-      // ✅ Update context + storage
-      loginSuccess(data.token, data.role);
+      // ✅ LOGIN FLOW
+      if (mode === "login") {
+        loginSuccess(data.token, data.user);
 
-      toast({
-        title: "Welcome back!",
-        description: "You are now logged in.",
-      });
+        toast({
+          title: "Welcome back!",
+          description: "You are now logged in.",
+        });
 
-      navigate("/admin/dashboard", { replace: true });
+        navigate("/admin/dashboard", { replace: true });
+      }
+
+      // ✅ SIGNUP FLOW
+      if (mode === "signup") {
+        toast({
+          title: "Account created",
+          description:
+            "Your account is pending admin approval. You will be able to log in once approved.",
+        });
+
+        setFormData({ email: "", password: "" });
+        setMode("login");
+      }
     } catch (err: any) {
       toast({
-        title: "Login failed",
+        title: "Error",
         description: err.message,
         variant: "destructive",
       });
@@ -85,17 +102,23 @@ const AdminLogin = () => {
           <span className="text-3xl font-serif font-light ml-1">
             Events
           </span>
-          <p className="text-muted-foreground mt-2">Admin Portal</p>
+          <p className="text-muted-foreground mt-2">
+            {mode === "login" ? "Admin Portal" : "Create Account"}
+          </p>
         </div>
 
         {/* Card */}
         <div className="bg-card rounded-lg border p-8">
           <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-6">
-            <Lock className="text-primary" size={28} />
+            {mode === "login" ? (
+              <Lock className="text-primary" size={28} />
+            ) : (
+              <UserPlus className="text-primary" size={28} />
+            )}
           </div>
 
-          <h1 className="font-serif text-2xl font-bold text-center mb-2">
-            Sign In
+          <h1 className="font-serif text-2xl font-bold text-center mb-6">
+            {mode === "login" ? "Sign In" : "Sign Up"}
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -103,7 +126,10 @@ const AdminLogin = () => {
             <div>
               <label className="block text-sm font-medium mb-2">Email</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                <Mail
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  size={18}
+                />
                 <Input
                   name="email"
                   type="email"
@@ -117,9 +143,14 @@ const AdminLogin = () => {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium mb-2">Password</label>
+              <label className="block text-sm font-medium mb-2">
+                Password
+              </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                <Lock
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  size={18}
+                />
                 <Input
                   name="password"
                   type={showPassword ? "text" : "password"}
@@ -145,9 +176,27 @@ const AdminLogin = () => {
               className="w-full"
               disabled={loading}
             >
-              {loading ? "Signing in..." : "Sign In"}
+              {loading
+                ? "Please wait..."
+                : mode === "login"
+                ? "Sign In"
+                : "Create Account"}
             </Button>
           </form>
+
+          {/* Toggle */}
+          <div className="mt-6 text-center">
+            <button
+              onClick={() =>
+                setMode(mode === "login" ? "signup" : "login")
+              }
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              {mode === "login"
+                ? "Don't have an account? Sign up"
+                : "Already have an account? Sign in"}
+            </button>
+          </div>
         </div>
       </motion.div>
     </div>

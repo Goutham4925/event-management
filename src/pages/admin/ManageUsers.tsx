@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
-import { Shield, UserCheck, UserX } from "lucide-react";
+import {
+  Shield,
+  UserCheck,
+  UserX,
+  Trash2,
+  Undo2,
+} from "lucide-react";
 
 import AdminLayout from "@/components/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { apiPut,apiGetAuth } from "@/lib/api";
+import { apiPut, apiGetAuth, apiDelete } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 /* =========================
    TYPES
@@ -14,12 +21,12 @@ type User = {
   email: string;
   role: "USER" | "ADMIN";
   status: "PENDING" | "APPROVED" | "BLOCKED";
-  createdAt: string;
 };
 
 const ManageUsers = () => {
   const { toast } = useToast();
-  const token = localStorage.getItem("token");
+  const { user: currentUser } = useAuth();
+  const token = localStorage.getItem("token")!;
 
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +34,7 @@ const ManageUsers = () => {
   /* ================= LOAD USERS ================= */
   const loadUsers = async () => {
     try {
-      const data = await apiGetAuth<User[]>("/users", token!);
+      const data = await apiGetAuth<User[]>("/users", token);
       setUsers(data);
     } catch (err: any) {
       toast({
@@ -45,21 +52,50 @@ const ManageUsers = () => {
   }, []);
 
   /* ================= ACTIONS ================= */
-  const approveUser = async (id: string) => {
-    await apiPut(`/admin/users/${id}/approve`, {}, token || undefined);
+  const approve = async (id: string) => {
+    await apiPut(`/users/${id}/approve`, {}, token);
     toast({ title: "User approved" });
     loadUsers();
   };
 
-  const blockUser = async (id: string) => {
-    await apiPut(`/admin/users/${id}/block`, {}, token || undefined);
+  const block = async (id: string) => {
+    await apiPut(`/users/${id}/block`, {}, token);
     toast({ title: "User blocked" });
     loadUsers();
   };
 
-  const promoteUser = async (id: string) => {
-    await apiPut(`/admin/users/${id}/promote`, {}, token || undefined);
-    toast({ title: "User promoted to admin" });
+  const unblock = async (id: string) => {
+    await apiPut(`/users/${id}/unblock`, {}, token);
+    toast({ title: "User unblocked" });
+    loadUsers();
+  };
+
+  const promote = async (id: string) => {
+    await apiPut(`/users/${id}/promote`, {}, token);
+    toast({ title: "Promoted to admin" });
+    loadUsers();
+  };
+
+  const demote = async (id: string) => {
+    await apiPut(`/users/${id}/demote`, {}, token);
+    toast({ title: "Demoted to user" });
+    loadUsers();
+  };
+
+  const remove = async (id: string) => {
+    if (currentUser?.id === id) {
+      toast({
+        title: "Action blocked",
+        description: "You cannot delete your own account",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!confirm("Delete this user permanently?")) return;
+
+    await apiDelete(`/users/${id}`, token);
+    toast({ title: "User deleted" });
     loadUsers();
   };
 
@@ -84,75 +120,82 @@ const ManageUsers = () => {
               </thead>
 
               <tbody>
-                {users.map((u) => (
-                  <tr
-                    key={u.id}
-                    className="border-b hover:bg-secondary/30"
-                  >
-                    <td className="p-4">{u.email}</td>
+                {users.map((u) => {
+                  const isSelf = currentUser?.id === u.id;
 
-                    <td className="p-4">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${
-                          u.role === "ADMIN"
-                            ? "bg-primary/20 text-primary"
-                            : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        {u.role}
-                      </span>
-                    </td>
+                  return (
+                    <tr key={u.id} className="border-b hover:bg-secondary/30">
+                      <td className="p-4">{u.email}</td>
 
-                    <td className="p-4">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${
-                          u.status === "APPROVED"
-                            ? "bg-green-500/20 text-green-600"
-                            : u.status === "BLOCKED"
-                            ? "bg-red-500/20 text-red-600"
-                            : "bg-yellow-500/20 text-yellow-600"
-                        }`}
-                      >
-                        {u.status}
-                      </span>
-                    </td>
+                      <td className="p-4">
+                        <span className="px-2 py-1 rounded text-xs font-medium bg-muted">
+                          {u.role}
+                        </span>
+                      </td>
 
-                    <td className="p-4 text-right space-x-2">
-                      {u.status === "PENDING" && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => approveUser(u.id)}
+                      <td className="p-4">
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-medium ${
+                            u.status === "APPROVED"
+                              ? "bg-green-500/20 text-green-600"
+                              : u.status === "BLOCKED"
+                              ? "bg-red-500/20 text-red-600"
+                              : "bg-yellow-500/20 text-yellow-600"
+                          }`}
                         >
-                          <UserCheck size={16} className="mr-1" />
-                          Approve
-                        </Button>
-                      )}
+                          {u.status}
+                        </span>
+                      </td>
 
-                      {u.status !== "BLOCKED" && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => blockUser(u.id)}
-                        >
-                          <UserX size={16} className="mr-1" />
-                          Block
-                        </Button>
-                      )}
+                      <td className="p-4 text-right space-x-2">
+                        {/* APPROVE */}
+                        {u.status === "PENDING" && (
+                          <Button size="sm" variant="ghost" onClick={() => approve(u.id)}>
+                            <UserCheck size={16} /> Approve
+                          </Button>
+                        )}
 
-                      {u.role !== "ADMIN" && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => promoteUser(u.id)}
-                        >
-                          <Shield size={16} className="mr-1" />
-                          Promote
-                        </Button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                        {/* BLOCK / UNBLOCK */}
+                        {!isSelf && (
+                          u.status === "BLOCKED" ? (
+                            <Button size="sm" variant="ghost" onClick={() => unblock(u.id)}>
+                              <Undo2 size={16} /> Unblock
+                            </Button>
+                          ) : (
+                            <Button size="sm" variant="ghost" onClick={() => block(u.id)}>
+                              <UserX size={16} /> Block
+                            </Button>
+                          )
+                        )}
+
+                        {/* PROMOTE / DEMOTE */}
+                        {!isSelf && u.status === "APPROVED" && (
+                          u.role === "USER" ? (
+                            <Button size="sm" variant="ghost" onClick={() => promote(u.id)}>
+                              <Shield size={16} /> Promote
+                            </Button>
+                          ) : (
+                            <Button size="sm" variant="ghost" onClick={() => demote(u.id)}>
+                              <Shield size={16} /> Demote
+                            </Button>
+                          )
+                        )}
+
+                        {/* DELETE */}
+                        {!isSelf && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-destructive"
+                            onClick={() => remove(u.id)}
+                          >
+                            <Trash2 size={16} /> Delete
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
 

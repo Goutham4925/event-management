@@ -5,31 +5,39 @@ import { signToken } from "../utils/jwt.js";
 
 const router = express.Router();
 
-/* ===============================
+/* ======================================================
    REGISTER (PUBLIC)
-================================ */
+   → Creates USER with PENDING status
+====================================================== */
 router.post("/register", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const exists = await prisma.user.findUnique({ where: { email } });
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password required" });
+    }
+
+    const exists = await prisma.user.findUnique({
+      where: { email },
+    });
+
     if (exists) {
       return res.status(400).json({ error: "Email already registered" });
     }
 
-    const hashed = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
+    await prisma.user.create({
       data: {
         email,
-        password: hashed,
-        status: "PENDING",
+        password: hashedPassword,
         role: "USER",
+        status: "PENDING",
       },
     });
 
     res.json({
-      message: "Account created. Await admin approval.",
+      message: "Account created successfully. Await admin approval.",
     });
   } catch (err) {
     console.error("REGISTER error:", err);
@@ -37,37 +45,56 @@ router.post("/register", async (req, res) => {
   }
 });
 
-/* ===============================
+/* ======================================================
    LOGIN (PUBLIC)
-================================ */
+   → Only APPROVED users can log in
+====================================================== */
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await prisma.user.findUnique({ where: { email } });
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password required" });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
     if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
+    // ⛔ Approval gate
     if (user.status !== "APPROVED") {
       return res.status(403).json({
         error:
           user.status === "PENDING"
             ? "Account awaiting admin approval"
-            : "Account blocked",
+            : "Account blocked by admin",
       });
     }
 
-    const token = signToken(user);
+    // ✅ Generate JWT
+    const token = signToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    });
 
+    // ✅ Send user object for frontend context
     res.json({
       token,
-      role: user.role,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (err) {
     console.error("LOGIN error:", err);
