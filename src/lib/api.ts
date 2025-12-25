@@ -64,6 +64,18 @@ export async function apiPostPublic<T>(
   return handleResponse<T>(res);
 }
 
+
+
+/* ===============================
+   GET (PUBLIC – NO AUTH)
+   ✔ Pages
+   ✔ Public content
+================================ */
+export async function apiGetPublic<T>(path: string): Promise<T> {
+  const res = await fetch(`${API_URL}${path}`);
+  return handleResponse<T>(res);
+}
+
 /* ===============================
    POST (ADMIN – JSON)
 ================================ */

@@ -194,3 +194,24 @@ enum ContactStatus {
   READ
   REPLIED
 }
+
+// =========================
+// CONTACT PAGE CONTENT
+// =========================
+model ContactPage {
+  id String @id @default("contact")
+
+  badge    String?
+  title    String
+  subtitle String?
+
+  email   String?
+  phone   String?
+  address String?
+
+  eventTypes Json? // ["Wedding", "Corporate", "Birthday"]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+

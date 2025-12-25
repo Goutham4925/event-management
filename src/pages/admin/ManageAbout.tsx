@@ -26,6 +26,9 @@ type AboutPage = {
   mission?: string;
 
   /* ✅ NEW */
+  visionIcon?: string;
+  missionIcon?: string;
+
   valuesSectionTitle?: string;
   valuesSectionSubtitle?: string;
 
@@ -36,10 +39,10 @@ type AboutPage = {
 };
 
 const ICON_OPTIONS = [
+  "Eye",
+  "Target",
   "Heart",
   "Award",
-  "Target",
-  "Eye",
   "Star",
   "Sparkles",
   "Users",
@@ -200,19 +203,29 @@ const ManageAbout = () => {
         </section>
 
         {/* ================= VISION & MISSION ================= */}
-        <section className="bg-card border rounded-lg p-6 space-y-4">
-          <h2 className="font-semibold text-lg">
-            Vision & Mission
-          </h2>
+        <section className="bg-card border rounded-lg p-6 space-y-6">
+          <h2 className="font-semibold text-lg">Vision & Mission</h2>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">
-                Vision
-              </label>
+            {/* Vision */}
+            <div className="space-y-3">
+              <select
+                value={about.visionIcon || "Eye"}
+                onChange={(e) =>
+                  setAbout({ ...about, visionIcon: e.target.value })
+                }
+                className="border rounded-md px-3 py-2 bg-background"
+              >
+                {ICON_OPTIONS.map((icon) => (
+                  <option key={icon} value={icon}>
+                    {icon}
+                  </option>
+                ))}
+              </select>
+
               <Textarea
                 rows={4}
-                placeholder="Describe your vision"
+                placeholder="Vision text"
                 value={about.vision || ""}
                 onChange={(e) =>
                   setAbout({ ...about, vision: e.target.value })
@@ -220,13 +233,25 @@ const ManageAbout = () => {
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">
-                Mission
-              </label>
+            {/* Mission */}
+            <div className="space-y-3">
+              <select
+                value={about.missionIcon || "Target"}
+                onChange={(e) =>
+                  setAbout({ ...about, missionIcon: e.target.value })
+                }
+                className="border rounded-md px-3 py-2 bg-background"
+              >
+                {ICON_OPTIONS.map((icon) => (
+                  <option key={icon} value={icon}>
+                    {icon}
+                  </option>
+                ))}
+              </select>
+
               <Textarea
                 rows={4}
-                placeholder="Describe your mission"
+                placeholder="Mission text"
                 value={about.mission || ""}
                 onChange={(e) =>
                   setAbout({ ...about, mission: e.target.value })
@@ -236,13 +261,12 @@ const ManageAbout = () => {
           </div>
         </section>
 
-
-        {/* ================= VALUES SECTION HEADER ================= */}
+        {/* ================= VALUES HEADER ================= */}
         <section className="bg-card border rounded-lg p-6 space-y-4">
           <h2 className="font-semibold text-lg">Values Section</h2>
 
           <Input
-            placeholder="Values Section Title (e.g. What Drives Us)"
+            placeholder="Values Section Title"
             value={about.valuesSectionTitle || ""}
             onChange={(e) =>
               setAbout({ ...about, valuesSectionTitle: e.target.value })
@@ -250,7 +274,7 @@ const ManageAbout = () => {
           />
 
           <Textarea
-            placeholder="Values Section Subtitle (e.g. Our Core Beliefs)"
+            placeholder="Values Section Subtitle"
             value={about.valuesSectionSubtitle || ""}
             onChange={(e) =>
               setAbout({ ...about, valuesSectionSubtitle: e.target.value })
@@ -258,9 +282,9 @@ const ManageAbout = () => {
           />
         </section>
 
-        {/* ================= VALUES (DYNAMIC LIST) ================= */}
+        {/* ================= VALUES LIST ================= */}
         <section className="bg-card border rounded-lg p-6 space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex justify-between items-center">
             <h3 className="font-semibold">Values Items</h3>
             <Button
               size="sm"
@@ -350,7 +374,7 @@ const ManageAbout = () => {
             }
           />
         </section>
-        
+
       </div>
     </AdminLayout>
   );

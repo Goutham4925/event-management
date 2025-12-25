@@ -13,6 +13,7 @@ import {
   Users,
   Info,
   Mail,
+  Home,
 } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,18 +27,25 @@ const navItems = [
   { name: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
   { name: "Stats", path: "/admin/stats", icon: BarChart3 },
   { name: "Users", path: "/admin/users", icon: Users },
+
+  { name: "Homepage", path: "/admin/settings", icon: Home },
+  { name: "About", path: "/admin/about", icon: Info },
+
+  
+  { name: "Contact Page", path: "/admin/contact-page", icon: Mail },
+
   { name: "Events", path: "/admin/events", icon: Calendar },
   { name: "Gallery", path: "/admin/gallery", icon: Image },
   { name: "Testimonials", path: "/admin/testimonials", icon: MessageSquare },
-  { name: "About", path: "/admin/about", icon: Info },
-  { name: "Messages", path: "/admin/messages", icon: Mail },
-  { name: "Settings", path: "/admin/settings", icon: Settings },
+
+  // ✅ CONTACT FORM SUBMISSIONS
+  { name: "Messages", path: "/admin/messages", icon: MessageSquare },
 ];
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout, user } = useAuth(); // ✅ FIXED
+  const { logout, user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = () => {

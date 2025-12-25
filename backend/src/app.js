@@ -11,6 +11,7 @@ import statsRoutes from "./routes/stats.routes.js";
 import userRoutes from "./routes/users.routes.js"; 
 import aboutRoutes from "./routes/about.route.js";
 import contactRoutes from "./routes/contact.route.js";
+import contactPageRoutes from "./routes/contactPage.route.js";
 
 dotenv.config();
 
@@ -29,6 +30,8 @@ app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/stats", statsRoutes); 
+app.use("/api/contact-page", contactPageRoutes);
+
 
 app.get("/", (_req, res) => {
   res.json({ status: "Backend running ✅" });

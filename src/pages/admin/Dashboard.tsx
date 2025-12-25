@@ -1,172 +1,215 @@
-import { motion } from 'framer-motion';
-import { Calendar, Image, MessageSquare, TrendingUp, ArrowUpRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import AdminLayout from '@/components/AdminLayout';
-import { events, galleryImages, testimonials } from '@/data/mockData';
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import {
+  Calendar,
+  Image,
+  MessageSquare,
+  TrendingUp,
+  ArrowUpRight,
+  Mail,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+
+import AdminLayout from "@/components/AdminLayout";
+import { apiGet, apiGetAuth } from "@/lib/api";
+
+/* ================= TYPES ================= */
+type Event = {
+  id: string;
+  title: string;
+  coverImage: string;
+  date: string;
+  category?: string;
+};
+
+type ContactMessage = {
+  id: string;
+  status: "NEW" | "READ" | "REPLIED";
+};
 
 const Dashboard = () => {
+  const token = localStorage.getItem("token")!;
+
+  const [events, setEvents] = useState<Event[]>([]);
+  const [galleryCount, setGalleryCount] = useState(0);
+  const [testimonialCount, setTestimonialCount] = useState(0);
+  const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [statsCount, setStatsCount] = useState(0);
+
+  /* ================= LOAD DASHBOARD DATA ================= */
+  useEffect(() => {
+    async function loadDashboard() {
+      const [
+        ev,
+        gallery,
+        testimonials,
+        contactMessages,
+        stats,
+      ] = await Promise.all([
+        apiGet<Event[]>("/events"),
+        apiGet<any[]>("/gallery"),
+        apiGet<any[]>("/testimonials"),
+        apiGetAuth<ContactMessage[]>("/contact", token),
+        apiGet<any[]>("/stats"),
+      ]);
+
+      setEvents(ev || []);
+      setGalleryCount(gallery?.length || 0);
+      setTestimonialCount(testimonials?.length || 0);
+      setMessages(contactMessages || []);
+      setStatsCount(stats?.length || 0);
+    }
+
+    loadDashboard();
+  }, []);
+
+  const newMessages = messages.filter((m) => m.status === "NEW").length;
+  const recentEvents = events.slice(0, 5);
+
+  /* ================= STATS CARDS ================= */
   const stats = [
     {
-      title: 'Total Events',
+      title: "Total Events",
       value: events.length,
       icon: Calendar,
-      change: '+12%',
-      changeType: 'positive',
-      link: '/admin/events',
+      link: "/admin/events",
     },
     {
-      title: 'Gallery Images',
-      value: galleryImages.length,
+      title: "Gallery Images",
+      value: galleryCount,
       icon: Image,
-      change: '+8%',
-      changeType: 'positive',
-      link: '/admin/gallery',
+      link: "/admin/gallery",
     },
     {
-      title: 'Testimonials',
-      value: testimonials.length,
+      title: "Testimonials",
+      value: testimonialCount,
       icon: MessageSquare,
-      change: '+5%',
-      changeType: 'positive',
-      link: '/admin/testimonials',
+      link: "/admin/testimonials",
     },
     {
-      title: 'Page Views',
-      value: '12.5k',
-      icon: TrendingUp,
-      change: '+23%',
-      changeType: 'positive',
-      link: '#',
+      title: "New Enquiries",
+      value: newMessages,
+      icon: Mail,
+      link: "/admin/messages",
+      highlight: true,
     },
   ];
-
-  const recentEvents = events.slice(0, 5);
 
   return (
     <AdminLayout>
       <div className="space-y-8">
-        {/* Header */}
+        {/* ================= HEADER ================= */}
         <div>
-          <h1 className="font-serif text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
-            Welcome back! Here's an overview of your website.
+          <h1 className="font-serif text-3xl font-bold">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Overview of your website activity
           </p>
         </div>
 
-        {/* Stats Grid */}
+        {/* ================= STATS GRID ================= */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, index) => (
             <motion.div
               key={stat.title}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
+              transition={{ delay: index * 0.1 }}
             >
               <Link
                 to={stat.link}
-                className="block bg-card rounded-lg border border-border p-6 hover:border-primary/50 transition-colors duration-300 group"
+                className={`block bg-card border rounded-lg p-6 hover:border-primary transition ${
+                  stat.highlight ? "border-primary/50" : ""
+                }`}
               >
-                <div className="flex items-start justify-between mb-4">
+                <div className="flex justify-between mb-4">
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <stat.icon className="text-primary" size={24} />
+                    <stat.icon className="text-primary" />
                   </div>
-                  <ArrowUpRight className="text-muted-foreground group-hover:text-primary transition-colors" size={20} />
+                  <ArrowUpRight className="text-muted-foreground" />
                 </div>
-                <div className="text-3xl font-serif font-bold text-foreground mb-1">
+
+                <div className="text-3xl font-serif font-bold">
                   {stat.value}
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground text-sm">{stat.title}</span>
-                  <span className={`text-xs font-medium ${
-                    stat.changeType === 'positive' ? 'text-green-500' : 'text-red-500'
-                  }`}>
-                    {stat.change}
-                  </span>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  {stat.title}
+                </p>
               </Link>
             </motion.div>
           ))}
         </div>
 
-        {/* Recent Events */}
+        {/* ================= RECENT EVENTS ================= */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="bg-card rounded-lg border border-border"
+          className="bg-card border rounded-lg"
         >
-          <div className="p-6 border-b border-border flex items-center justify-between">
-            <h2 className="font-serif text-xl font-bold text-foreground">Recent Events</h2>
-            <Link to="/admin/events" className="text-primary text-sm hover:underline">
+          <div className="p-6 border-b flex justify-between">
+            <h2 className="font-serif text-xl font-bold">
+              Recent Events
+            </h2>
+            <Link
+              to="/admin/events"
+              className="text-primary text-sm hover:underline"
+            >
               View All
             </Link>
           </div>
-          <div className="divide-y divide-border">
+
+          <div className="divide-y">
             {recentEvents.map((event) => (
-              <div key={event.id} className="p-4 flex items-center gap-4 hover:bg-secondary/50 transition-colors">
+              <div
+                key={event.id}
+                className="p-4 flex gap-4 items-center"
+              >
                 <img
                   src={event.coverImage}
-                  alt={event.title}
                   className="w-16 h-12 rounded object-cover"
                 />
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-foreground truncate">{event.title}</h3>
-                  <p className="text-sm text-muted-foreground">{event.category}</p>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {new Date(event.date).toLocaleDateString()}
+                <div className="flex-1">
+                  <p className="font-medium">{event.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(event.date).toLocaleDateString()}
+                  </p>
                 </div>
               </div>
             ))}
+
+            {events.length === 0 && (
+              <p className="p-6 text-muted-foreground">
+                No events yet
+              </p>
+            )}
           </div>
         </motion.div>
 
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6"
-        >
+        {/* ================= QUICK ACTIONS ================= */}
+        <div className="grid md:grid-cols-3 gap-6">
           <Link
             to="/admin/events"
-            className="bg-card rounded-lg border border-border p-6 hover:border-primary/50 transition-colors text-center group"
+            className="bg-card border rounded-lg p-6 text-center hover:border-primary"
           >
-            <Calendar className="mx-auto mb-4 text-primary" size={32} />
-            <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">
-              Add New Event
-            </h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              Create a new event listing
-            </p>
+            <Calendar className="mx-auto mb-3 text-primary" size={32} />
+            <p className="font-medium">Add Event</p>
           </Link>
 
           <Link
             to="/admin/gallery"
-            className="bg-card rounded-lg border border-border p-6 hover:border-primary/50 transition-colors text-center group"
+            className="bg-card border rounded-lg p-6 text-center hover:border-primary"
           >
-            <Image className="mx-auto mb-4 text-primary" size={32} />
-            <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">
-              Upload Images
-            </h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              Add photos to gallery
-            </p>
+            <Image className="mx-auto mb-3 text-primary" size={32} />
+            <p className="font-medium">Upload Images</p>
           </Link>
 
           <Link
-            to="/admin/settings"
-            className="bg-card rounded-lg border border-border p-6 hover:border-primary/50 transition-colors text-center group"
+            to="/admin/messages"
+            className="bg-card border rounded-lg p-6 text-center hover:border-primary"
           >
-            <MessageSquare className="mx-auto mb-4 text-primary" size={32} />
-            <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">
-              Update Settings
-            </h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              Modify site content
-            </p>
+            <Mail className="mx-auto mb-3 text-primary" size={32} />
+            <p className="font-medium">View Enquiries</p>
           </Link>
-        </motion.div>
+        </div>
       </div>
     </AdminLayout>
   );

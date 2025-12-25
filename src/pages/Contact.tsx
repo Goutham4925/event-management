@@ -1,26 +1,31 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import {
-  Mail,
-  Phone,
-  MapPin,
-  Send,
-  Facebook,
-  Instagram,
-  Twitter,
-  Linkedin,
-} from "lucide-react";
+import { Mail, Phone, MapPin, Send } from "lucide-react";
 
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { apiPostPublic } from "@/lib/api";
-import { siteSettings } from "@/data/mockData";
+import { apiGetPublic, apiPostPublic } from "@/lib/api";
+
+/* ================= TYPES ================= */
+type ContactPage = {
+  badge?: string;
+  title: string;
+  subtitle?: string;
+
+  email?: string;
+  phone?: string;
+  address?: string;
+
+  eventTypes?: string[];
+};
 
 const Contact = () => {
   const { toast } = useToast();
+
+  const [page, setPage] = useState<ContactPage | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -30,6 +35,36 @@ const Contact = () => {
     eventType: "",
     message: "",
   });
+
+  /* ================= LOAD PAGE CONTENT ================= */
+  useEffect(() => {
+    apiGetPublic<ContactPage | null>("/contact-page")
+      .then((res) => {
+        setPage(
+          res ?? {
+            badge: "Get in Touch",
+            title: "Contact Us",
+            subtitle: "",
+            email: "",
+            phone: "",
+            address: "",
+            eventTypes: [],
+          }
+        );
+      })
+      .catch(() => {
+        setPage({
+          badge: "Get in Touch",
+          title: "Contact Us",
+          subtitle: "",
+          email: "",
+          phone: "",
+          address: "",
+          eventTypes: [],
+        });
+      });
+  }, []);
+
 
   /* ================= HANDLERS ================= */
   const handleChange = (
@@ -53,8 +88,8 @@ const Contact = () => {
       await apiPostPublic("/contact", {
         name: formData.name.trim(),
         email: formData.email.trim(),
-        phone: formData.phone.trim(),
-        eventType: formData.eventType,
+        phone: formData.phone.trim() || null,
+        eventType: formData.eventType || null,
         message: formData.message.trim(),
       });
 
@@ -82,6 +117,16 @@ const Contact = () => {
     }
   };
 
+  if (!page) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-muted-foreground">Loading contact page...</p>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       {/* ================= HERO ================= */}
@@ -93,15 +138,21 @@ const Contact = () => {
             transition={{ duration: 0.8 }}
             className="max-w-3xl mx-auto"
           >
-            <span className="text-primary text-sm tracking-widest uppercase mb-4 block">
-              Get in Touch
-            </span>
+            {page.badge && (
+              <span className="text-primary text-sm tracking-widest uppercase mb-4 block">
+                {page.badge}
+              </span>
+            )}
+
             <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              Let’s Create Something Beautiful
+              {page.title}
             </h1>
-            <p className="text-muted-foreground text-lg">
-              Ready to start planning your event? We’d love to hear from you.
-            </p>
+
+            {page.subtitle && (
+              <p className="text-muted-foreground text-lg">
+                {page.subtitle}
+              </p>
+            )}
           </motion.div>
         </div>
       </section>
@@ -120,80 +171,40 @@ const Contact = () => {
             </h2>
 
             <div className="space-y-6 mb-12">
-              <a
-                href={`mailto:${siteSettings.contactEmail}`}
-                className="flex gap-4 p-4 bg-card border rounded-lg hover:border-primary/50"
-              >
-                <Mail className="text-primary" />
-                <div>
-                  <h3 className="font-semibold">Email Us</h3>
-                  <p className="text-muted-foreground">
-                    {siteSettings.contactEmail}
-                  </p>
-                </div>
-              </a>
-
-              <a
-                href={`tel:${siteSettings.contactPhone}`}
-                className="flex gap-4 p-4 bg-card border rounded-lg hover:border-primary/50"
-              >
-                <Phone className="text-primary" />
-                <div>
-                  <h3 className="font-semibold">Call Us</h3>
-                  <p className="text-muted-foreground">
-                    {siteSettings.contactPhone}
-                  </p>
-                </div>
-              </a>
-
-              <div className="flex gap-4 p-4 bg-card border rounded-lg">
-                <MapPin className="text-primary" />
-                <div>
-                  <h3 className="font-semibold">Visit Us</h3>
-                  <p className="text-muted-foreground">
-                    {siteSettings.address}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* ================= SOCIALS ================= */}
-            <div className="flex gap-4">
-              {siteSettings.socialLinks.facebook && (
+              {page.email && (
                 <a
-                  href={siteSettings.socialLinks.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href={`mailto:${page.email}`}
+                  className="flex gap-4 p-4 bg-card border rounded-lg hover:border-primary/50"
                 >
-                  <Facebook />
+                  <Mail className="text-primary" />
+                  <div>
+                    <h3 className="font-semibold">Email Us</h3>
+                    <p className="text-muted-foreground">{page.email}</p>
+                  </div>
                 </a>
               )}
-              {siteSettings.socialLinks.instagram && (
+
+              {page.phone && (
                 <a
-                  href={siteSettings.socialLinks.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href={`tel:${page.phone}`}
+                  className="flex gap-4 p-4 bg-card border rounded-lg hover:border-primary/50"
                 >
-                  <Instagram />
+                  <Phone className="text-primary" />
+                  <div>
+                    <h3 className="font-semibold">Call Us</h3>
+                    <p className="text-muted-foreground">{page.phone}</p>
+                  </div>
                 </a>
               )}
-              {siteSettings.socialLinks.twitter && (
-                <a
-                  href={siteSettings.socialLinks.twitter}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Twitter />
-                </a>
-              )}
-              {siteSettings.socialLinks.linkedin && (
-                <a
-                  href={siteSettings.socialLinks.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Linkedin />
-                </a>
+
+              {page.address && (
+                <div className="flex gap-4 p-4 bg-card border rounded-lg">
+                  <MapPin className="text-primary" />
+                  <div>
+                    <h3 className="font-semibold">Visit Us</h3>
+                    <p className="text-muted-foreground">{page.address}</p>
+                  </div>
+                </div>
               )}
             </div>
           </motion.div>
@@ -235,6 +246,7 @@ const Contact = () => {
                     value={formData.phone}
                     onChange={handleChange}
                   />
+
                   <select
                     name="eventType"
                     value={formData.eventType}
@@ -242,10 +254,11 @@ const Contact = () => {
                     className="h-10 rounded-md border bg-background px-3"
                   >
                     <option value="">Event Type</option>
-                    <option value="wedding">Wedding</option>
-                    <option value="corporate">Corporate</option>
-                    <option value="birthday">Birthday</option>
-                    <option value="other">Other</option>
+                    {page.eventTypes?.map((e) => (
+                      <option key={e} value={e}>
+                        {e}
+                      </option>
+                    ))}
                   </select>
                 </div>
 

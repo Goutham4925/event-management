@@ -25,10 +25,13 @@ type AboutPage = {
   vision?: string;
   mission?: string;
 
+  /* ✅ NEW – dynamic icons */
+  visionIcon?: string;   // e.g. "Eye"
+  missionIcon?: string;  // e.g. "Target"
+
   heroImage?: string;
   yearsExperience?: number;
 
-  /* ✅ NEW */
   valuesSectionTitle?: string;
   valuesSectionSubtitle?: string;
 
@@ -140,36 +143,74 @@ const About = () => {
         </div>
       </section>
 
-      {/* ================= VISION & MISSION ================= */}
+      {/* ================= VISION & MISSION (DYNAMIC ICONS) ================= */}
       {(about.vision || about.mission) && (
         <section className="py-24 bg-card">
-          <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12">
-            {about.vision && (
-              <div className="bg-background p-8 rounded-lg border">
-                <h3 className="font-serif text-2xl font-bold mb-4">
-                  Our Vision
-                </h3>
-                <p className="text-muted-foreground">{about.vision}</p>
-              </div>
-            )}
+          <div className="container mx-auto px-4">
+            <div className="grid md:grid-cols-2 gap-12">
 
-            {about.mission && (
-              <div className="bg-background p-8 rounded-lg border">
-                <h3 className="font-serif text-2xl font-bold mb-4">
-                  Our Mission
-                </h3>
-                <p className="text-muted-foreground">{about.mission}</p>
-              </div>
-            )}
+              {/* VISION */}
+              {about.vision && (
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  viewport={{ once: true }}
+                  className="bg-background p-8 rounded-lg border"
+                >
+                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                    {(() => {
+                      const VisionIcon =
+                        iconMap[about.visionIcon || "Eye"] || iconMap.Eye;
+                      return <VisionIcon className="text-primary" size={24} />;
+                    })()}
+                  </div>
+
+                  <h3 className="font-serif text-2xl font-bold mb-4">
+                    Our Vision
+                  </h3>
+
+                  <p className="text-muted-foreground leading-relaxed">
+                    {about.vision}
+                  </p>
+                </motion.div>
+              )}
+
+              {/* MISSION */}
+              {about.mission && (
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.1 }}
+                  viewport={{ once: true }}
+                  className="bg-background p-8 rounded-lg border"
+                >
+                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                    {(() => {
+                      const MissionIcon =
+                        iconMap[about.missionIcon || "Target"] || iconMap.Target;
+                      return <MissionIcon className="text-primary" size={24} />;
+                    })()}
+                  </div>
+
+                  <h3 className="font-serif text-2xl font-bold mb-4">
+                    Our Mission
+                  </h3>
+
+                  <p className="text-muted-foreground leading-relaxed">
+                    {about.mission}
+                  </p>
+                </motion.div>
+              )}
+            </div>
           </div>
         </section>
       )}
 
-      {/* ================= VALUES (FULLY DYNAMIC) ================= */}
+      {/* ================= VALUES ================= */}
       {about.values && about.values.length > 0 && (
         <section className="py-24">
           <div className="container mx-auto px-4">
-
             <SectionTitle
               subtitle={about.valuesSectionSubtitle || "Our Values"}
               title={about.valuesSectionTitle || "What Drives Us"}
@@ -209,7 +250,7 @@ const About = () => {
         </section>
       )}
 
-      {/* ================= STATS (FROM ADMIN) ================= */}
+      {/* ================= STATS ================= */}
       {stats.length > 0 && (
         <section className="py-24 bg-card">
           <div className="container mx-auto px-4">
