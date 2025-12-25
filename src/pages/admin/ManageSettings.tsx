@@ -23,8 +23,7 @@ type SettingsForm = {
   // About
   aboutHeading: string;
   aboutText: string;
-  vision: string;
-  mission: string;
+
 
   // Portfolio
   portfolioTitle: string;
@@ -59,8 +58,7 @@ const emptySettings: SettingsForm = {
 
   aboutHeading: "",
   aboutText: "",
-  vision: "",
-  mission: "",
+
 
   portfolioTitle: "",
   portfolioSubtitle: "",
@@ -104,8 +102,6 @@ const ManageSettings = () => {
 
           aboutHeading: data.aboutHeading ?? "",
           aboutText: data.aboutText ?? "",
-          vision: data.vision ?? "",
-          mission: data.mission ?? "",
 
           portfolioTitle: data.portfolioTitle ?? "",
           portfolioSubtitle: data.portfolioSubtitle ?? "",
@@ -170,8 +166,6 @@ const ManageSettings = () => {
 
           aboutHeading: settings.aboutHeading,
           aboutText: settings.aboutText,
-          vision: settings.vision,
-          mission: settings.mission,
 
           portfolioTitle: settings.portfolioTitle,
           portfolioSubtitle: settings.portfolioSubtitle,
@@ -196,6 +190,7 @@ const ManageSettings = () => {
         },
         token || undefined
       );
+
 
       toast({
         title: "Saved",

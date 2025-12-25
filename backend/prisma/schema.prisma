@@ -47,12 +47,12 @@ model SiteSettings {
   ctaTitle    String
   ctaSubtitle String
 
-  // Contact
+  // Contact                          //Not using Currently
   contactEmail String?
   contactPhone String?
   address      String?
 
-  // Social
+  // Social                          //Not using Currently
   socialLinks Json?
 
   createdAt DateTime @default(now())
