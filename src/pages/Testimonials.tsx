@@ -8,25 +8,47 @@ import TestimonialCard from "@/components/TestimonialCard";
 import { apiGet } from "@/lib/api";
 import { Testimonial } from "@/types/testimonial";
 import { Stat } from "@/types/stat";
+import { PageHero } from "@/types/pageHero";
 
 const Testimonials = () => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [stats, setStats] = useState<Stat[]>([]);
+  const [hero, setHero] = useState<PageHero | null>(null);
+  const [loading, setLoading] = useState(true);
 
   /* ================= LOAD DATA ================= */
   useEffect(() => {
     async function loadData() {
-      const [ts, st] = await Promise.all([
-        apiGet<Testimonial[]>("/testimonials"),
-        apiGet<Stat[]>("/stats?page=TESTIMONIALS"),
-      ]);
+      try {
+        const [ts, st, heroData] = await Promise.all([
+          apiGet<Testimonial[]>("/testimonials"),
+          apiGet<Stat[]>("/stats?page=TESTIMONIALS"),
+          apiGet<PageHero>("/page-hero/TESTIMONIALS"),
+        ]);
 
-      setTestimonials(ts || []);
-      setStats(st || []);
+        setTestimonials(ts || []);
+        setStats(st || []);
+        setHero(heroData);
+      } catch (err) {
+        console.error("Failed to load testimonials page", err);
+      } finally {
+        setLoading(false);
+      }
     }
 
     loadData();
   }, []);
+
+  /* ================= SAFE LOADING ================= */
+  if (loading || !hero) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-muted-foreground">Loading testimonials…</p>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -39,15 +61,21 @@ const Testimonials = () => {
             transition={{ duration: 0.8 }}
             className="max-w-3xl mx-auto text-center"
           >
-            <span className="text-primary text-sm font-medium tracking-widest uppercase mb-4 block">
-              Testimonials
-            </span>
+            {hero.badge && (
+              <span className="text-primary text-sm font-medium tracking-widest uppercase mb-4 block">
+                {hero.badge}
+              </span>
+            )}
+
             <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-              Client Love
+              {hero.title}
             </h1>
-            <p className="text-muted-foreground text-lg leading-relaxed">
-              Hear from the couples and companies who trusted us with their most precious moments.
-            </p>
+
+            {hero.subtitle && (
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                {hero.subtitle}
+              </p>
+            )}
           </motion.div>
         </div>
       </section>

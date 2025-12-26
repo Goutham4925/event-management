@@ -15,6 +15,7 @@ import {
   Mail,
   Home,
   List,
+  Layers,
 } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
@@ -43,6 +44,9 @@ const navItems = [
 
   // ✅ CONTACT FORM SUBMISSIONS
   { name: "Messages", path: "/admin/messages", icon: MessageSquare },
+  { name: "Works Hero", path: "/admin/works-hero", icon: Layers },
+  { name: "Gallery Hero", path: "/admin/gallery-hero", icon: Layers },
+  { name: "Testimonials Hero", path: "/admin/testimonials-hero", icon: Layers },
 ];
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {

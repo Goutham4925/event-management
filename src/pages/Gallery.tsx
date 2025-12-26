@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Layout from "@/components/Layout";
 import Lightbox from "@/components/Lightbox";
 import { apiGet } from "@/lib/api";
+import { PageHero } from "@/types/pageHero";
 
 /* =========================
    TYPES
@@ -15,12 +16,31 @@ type GalleryImage = {
 
 const Gallery = () => {
   const [images, setImages] = useState<GalleryImage[]>([]);
+  const [hero, setHero] = useState<PageHero | null>(null);
+
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  /* ================= LOAD IMAGES ================= */
+  /* ================= LOAD DATA ================= */
   useEffect(() => {
-    apiGet<GalleryImage[]>("/gallery").then(setImages);
+    async function loadData() {
+      try {
+        const [imagesData, heroData] = await Promise.all([
+          apiGet<GalleryImage[]>("/gallery"),
+          apiGet<PageHero>("/page-hero/GALLERY"),
+        ]);
+
+        setImages(imagesData);
+        setHero(heroData);
+      } catch (err) {
+        console.error("Failed to load gallery page", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
   }, []);
 
   /* ================= LIGHTBOX ================= */
@@ -37,6 +57,17 @@ const Gallery = () => {
     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
+  /* ================= SAFE LOADING ================= */
+  if (loading || !hero) {
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-muted-foreground">Loading gallery…</p>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       {/* ================= HERO ================= */}
@@ -48,15 +79,21 @@ const Gallery = () => {
             transition={{ duration: 0.8 }}
             className="max-w-3xl mx-auto text-center"
           >
-            <span className="text-primary text-sm font-medium tracking-widest uppercase mb-4 block">
-              Our Gallery
-            </span>
+            {hero.badge && (
+              <span className="text-primary text-sm font-medium tracking-widest uppercase mb-4 block">
+                {hero.badge}
+              </span>
+            )}
+
             <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-              Moments Captured
+              {hero.title}
             </h1>
-            <p className="text-muted-foreground text-lg leading-relaxed">
-              Browse through our collection of stunning event photography showcasing the magic we create.
-            </p>
+
+            {hero.subtitle && (
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                {hero.subtitle}
+              </p>
+            )}
           </motion.div>
         </div>
       </section>
@@ -80,12 +117,7 @@ const Gallery = () => {
                   }`}
                   onClick={() => openLightbox(index)}
                 >
-                  {/* Aspect ratio */}
-                  <div
-                    className={
-                      isFeatured ? "aspect-square" : "aspect-[4/3]"
-                    }
-                  >
+                  <div className={isFeatured ? "aspect-square" : "aspect-[4/3]"}>
                     <img
                       src={img.imageUrl}
                       alt={`Gallery image ${index + 1}`}

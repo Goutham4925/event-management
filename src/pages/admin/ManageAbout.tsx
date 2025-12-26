@@ -16,9 +16,11 @@ type AboutValue = {
 };
 
 type AboutPage = {
+  heroBadge?: string;
   heroTitle: string;
   heroSubtitle: string;
 
+  storyBadge?: string;
   storyTitle?: string;
   storyContent?: string;
 
@@ -142,6 +144,14 @@ const ManageAbout = () => {
           <h2 className="font-semibold text-lg">Hero Section</h2>
 
           <Input
+            placeholder="Hero Badge"
+            value={about.heroBadge || ""}
+            onChange={(e) =>
+              setAbout({ ...about, heroBadge: e.target.value })
+            }
+          />
+
+          <Input
             placeholder="Hero Title"
             value={about.heroTitle}
             onChange={(e) =>
@@ -183,6 +193,14 @@ const ManageAbout = () => {
         {/* ================= STORY ================= */}
         <section className="bg-card border rounded-lg p-6 space-y-4">
           <h2 className="font-semibold text-lg">Our Story</h2>
+
+          <Input
+            placeholder="Story Badge"
+            value={about.storyBadge || ""}
+            onChange={(e) =>
+              setAbout({ ...about, storyBadge: e.target.value })
+            }
+          />
 
           <Input
             placeholder="Story Title"
@@ -266,16 +284,16 @@ const ManageAbout = () => {
           <h2 className="font-semibold text-lg">Values Section</h2>
 
           <Input
-            placeholder="Values Section Title"
-            value={about.valuesSectionTitle || ""}
+            placeholder="Values Section Subtitle"
+            value={about.valuesSectionSubtitle || ""}
             onChange={(e) =>
               setAbout({ ...about, valuesSectionTitle: e.target.value })
             }
           />
 
           <Textarea
-            placeholder="Values Section Subtitle"
-            value={about.valuesSectionSubtitle || ""}
+            placeholder="Values Section Title"
+            value={about.valuesSectionTitle || ""}
             onChange={(e) =>
               setAbout({ ...about, valuesSectionSubtitle: e.target.value })
             }

@@ -83,9 +83,11 @@ model SiteSettings {
 model AboutPage {
   id String @id @default("about")
 
+  heroBadge       String?
   heroTitle       String
   heroSubtitle    String
 
+  storyBadge      String?
   storyTitle      String?
   storyContent    String?
 
@@ -206,6 +208,19 @@ enum ContactStatus {
   READ
   REPLIED
 }
+
+model PageHero {
+  id String @id
+  // id examples: "works", "gallery", "testimonials"
+
+  badge    String?
+  title    String
+  subtitle String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 
 // =========================
 // CONTACT PAGE CONTENT

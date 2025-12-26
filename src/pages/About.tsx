@@ -16,9 +16,11 @@ type AboutValue = {
 };
 
 type AboutPage = {
+  heroBadge?: string;
   heroTitle: string;
   heroSubtitle: string;
 
+  storyBadge?: string;
   storyTitle?: string;
   storyContent?: string;
 
@@ -79,7 +81,7 @@ const About = () => {
             className="max-w-3xl mx-auto"
           >
             <span className="text-primary text-sm tracking-widest uppercase mb-4 block">
-              About Us
+              {about.heroBadge}
             </span>
 
             <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
@@ -102,7 +104,7 @@ const About = () => {
             viewport={{ once: true }}
           >
             <span className="text-primary uppercase tracking-widest text-sm block mb-3">
-              Our Story
+              {about.storyBadge}
             </span>
 
             <h2 className="font-serif text-3xl md:text-4xl font-bold mb-6">

@@ -13,6 +13,7 @@ import aboutRoutes from "./routes/about.route.js";
 import contactRoutes from "./routes/contact.route.js";
 import contactPageRoutes from "./routes/contactPage.route.js";
 import categoryRoutes from "./routes/categories.route.js";
+import pageHeroRoutes from "./routes/pageHero.route.js";
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.use("/api/contact", contactRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/stats", statsRoutes); 
 app.use("/api/contact-page", contactPageRoutes);
+app.use("/api/page-hero", pageHeroRoutes);
 
 
 app.get("/", (_req, res) => {

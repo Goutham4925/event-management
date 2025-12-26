@@ -6,6 +6,7 @@ import EventCard from "@/components/EventCard";
 import { apiGet } from "@/lib/api";
 
 import { Event } from "@/types/event";
+import { PageHero } from "@/types/pageHero";
 
 /* ================= TYPES ================= */
 type Category = {
@@ -18,22 +19,25 @@ const Works = () => {
   const [categories, setCategories] = useState<string[]>(["All"]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [loading, setLoading] = useState(true);
+  const [hero, setHero] = useState<PageHero | null>(null);
 
-  /* ================= LOAD EVENTS + CATEGORIES ================= */
+  /* ================= LOAD DATA ================= */
   useEffect(() => {
     async function loadData() {
       try {
-        const [eventsData, categoriesData] = await Promise.all([
+        const [eventsData, categoriesData, heroData] = await Promise.all([
           apiGet<Event[]>("/events"),
           apiGet<Category[]>("/categories"),
+          apiGet<PageHero | null>("/page-hero/WORKS"),
         ]);
 
         setEvents(eventsData);
+        setHero(heroData);
 
         const categoryNames = categoriesData.map((c) => c.name);
         setCategories(["All", ...categoryNames]);
       } catch (err) {
-        console.error("Failed to load works page data", err);
+        console.error("Failed to load works page", err);
       } finally {
         setLoading(false);
       }
@@ -53,7 +57,7 @@ const Works = () => {
     return (
       <Layout>
         <div className="min-h-screen flex items-center justify-center">
-          <p className="text-muted-foreground">Loading events…</p>
+          <p className="text-muted-foreground">Loading works page…</p>
         </div>
       </Layout>
     );
@@ -71,18 +75,21 @@ const Works = () => {
             transition={{ duration: 0.8 }}
             className="max-w-3xl mx-auto text-center"
           >
-            <span className="text-primary text-sm font-medium tracking-widest uppercase mb-4 block">
-              Our Portfolio
-            </span>
+            {hero?.badge && (
+              <span className="text-primary text-sm font-medium tracking-widest uppercase mb-4 block">
+                {hero.badge}
+              </span>
+            )}
 
             <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              Events We’ve Crafted
+              {hero?.title || "Events We’ve Crafted"}
             </h1>
 
-            <p className="text-muted-foreground text-lg leading-relaxed">
-              Explore our collection of meticulously planned and flawlessly
-              executed events.
-            </p>
+            {hero?.subtitle && (
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                {hero.subtitle}
+              </p>
+            )}
           </motion.div>
         </div>
       </section>
@@ -90,7 +97,6 @@ const Works = () => {
       {/* ================= FILTER + GRID ================= */}
       <section className="py-24">
         <div className="container mx-auto px-4">
-
           {/* ================= CATEGORY FILTER ================= */}
           {categories.length > 1 && (
             <div className="flex flex-wrap justify-center gap-4 mb-16">

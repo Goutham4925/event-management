@@ -29,6 +29,9 @@ import ManageAbout from "./pages/admin/ManageAbout";
 import ManageMessages from "./pages/admin/ManageMessages";
 import ManageContactPage from "./pages/admin/ManageContactPage";
 import ManageCategories from "./pages/admin/ManageCategories";
+import ManageWorksHero from "./pages/admin/ManageWorksHero";
+import ManageGalleryHero from "./pages/admin/ManageGalleryHero";
+import ManageTestimonialsHero from "./pages/admin/ManageTestimonialsHero";
 
 const queryClient = new QueryClient();
 
@@ -157,6 +160,34 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+
+            <Route
+              path="/admin/works-hero"
+              element={
+                <ProtectedRoute>
+                  <ManageWorksHero />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/gallery-hero"
+              element={
+                <ProtectedRoute>
+                  <ManageGalleryHero />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/testimonials-hero"
+              element={
+                <ProtectedRoute>
+                  <ManageTestimonialsHero />
+                </ProtectedRoute>
+              }
+            />
+
 
             {/* ================= REDIRECT ================= */}
             <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
