@@ -7,6 +7,7 @@ import { apiGet } from "@/lib/api";
 
 import { Event } from "@/types/event";
 import { PageHero } from "@/types/pageHero";
+import { useSearchParams } from "react-router-dom";
 
 /* ================= TYPES ================= */
 type Category = {
@@ -20,31 +21,43 @@ const Works = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [loading, setLoading] = useState(true);
   const [hero, setHero] = useState<PageHero | null>(null);
+  const [searchParams] = useSearchParams();
+
 
   /* ================= LOAD DATA ================= */
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [eventsData, categoriesData, heroData] = await Promise.all([
-          apiGet<Event[]>("/events"),
-          apiGet<Category[]>("/categories"),
-          apiGet<PageHero | null>("/page-hero/WORKS"),
-        ]);
+useEffect(() => {
+  async function loadData() {
+    try {
+      const [eventsData, categoriesData, heroData] = await Promise.all([
+        apiGet<Event[]>("/events"),
+        apiGet<Category[]>("/categories"),
+        apiGet<PageHero>("/page-hero/WORKS"),
+      ]);
 
-        setEvents(eventsData);
-        setHero(heroData);
+      setEvents(eventsData);
+      setHero(heroData);
 
-        const categoryNames = categoriesData.map((c) => c.name);
-        setCategories(["All", ...categoryNames]);
-      } catch (err) {
-        console.error("Failed to load works page", err);
-      } finally {
-        setLoading(false);
+      const categoryNames = categoriesData.map((c) => c.name);
+      setCategories(["All", ...categoryNames]);
+
+      // ✅ READ CATEGORY FROM URL
+      const urlCategory = searchParams.get("category");
+
+      if (urlCategory && categoryNames.includes(urlCategory)) {
+        setSelectedCategory(urlCategory);
+      } else {
+        setSelectedCategory("All");
       }
+    } catch (err) {
+      console.error("Failed to load works page", err);
+    } finally {
+      setLoading(false);
     }
+  }
 
-    loadData();
-  }, []);
+  loadData();
+}, [searchParams]);
+
 
   /* ================= FILTER ================= */
   const filteredEvents =

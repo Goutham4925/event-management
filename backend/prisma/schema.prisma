@@ -40,6 +40,10 @@ enum UserStatus {
 model SiteSettings {
   id String @id @default("settings")
 
+  // Brand
+  brandLogo       String?   // logo image URL
+  brandSubtitle   String?   // footer/about short text
+
   // Hero
   heroBadge    String?
   heroTitle    String
@@ -70,8 +74,12 @@ model SiteSettings {
   contactPhone String?
   address      String?
 
-  // Social                          //Not using Currently
+  // Social                          
   socialLinks Json?
+  
+  //  LEGAL PAGES (HTML)
+  privacyPolicyHtml String?
+  termsHtml         String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

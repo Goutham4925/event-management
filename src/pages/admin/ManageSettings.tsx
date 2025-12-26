@@ -11,31 +11,60 @@ import { apiGet, apiPut } from "@/lib/api";
 import { SiteSettings } from "@/types/siteSettings";
 
 /* =====================================================
-   FORM SHAPE
+   TYPES
 ===================================================== */
+type SocialLinks = {
+  facebook?: string;
+  instagram?: string;
+  twitter?: string;
+  linkedin?: string;
+};
+
 type SettingsForm = {
+  /* BRAND */
+  brandLogo: string;
+  brandSubtitle: string;
+
+  /* HERO */
   heroBadge: string;
   heroTitle: string;
   heroSubtitle: string;
   heroImage: string;
 
+  /* ABOUT */
   aboutHeading: string;
   aboutText: string;
   aboutImage1: string;
   aboutImage2: string;
 
+  /* PORTFOLIO */
   portfolioTitle: string;
   portfolioSubtitle: string;
   portfolioDescription: string;
 
+  /* TESTIMONIALS */
   testimonialTitle: string;
   testimonialSubtitle: string;
 
+  /* CTA */
   ctaTitle: string;
   ctaSubtitle: string;
+
+  /* SOCIAL */
+  socialLinks: SocialLinks;
+
+  /* LEGAL (HTML) */
+  privacyPolicyHtml: string;
+  termsHtml: string;
 };
 
+/* =====================================================
+   DEFAULT STATE
+===================================================== */
 const emptySettings: SettingsForm = {
+  brandLogo: "",
+  brandSubtitle: "",
+
   heroBadge: "",
   heroTitle: "",
   heroSubtitle: "",
@@ -55,22 +84,35 @@ const emptySettings: SettingsForm = {
 
   ctaTitle: "",
   ctaSubtitle: "",
+
+  socialLinks: {
+    facebook: "",
+    instagram: "",
+    twitter: "",
+    linkedin: "",
+  },
+
+  privacyPolicyHtml: "",
+  termsHtml: "",
 };
 
 const ManageSettings = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [settings, setSettings] = useState<SettingsForm>(emptySettings);
 
-  /* ================= LOAD SETTINGS ================= */
+  /* ================= LOAD ================= */
   useEffect(() => {
     async function loadSettings() {
       try {
         const data = await apiGet<SiteSettings>("/settings");
 
         setSettings({
+          brandLogo: data.brandLogo ?? "",
+          brandSubtitle: data.brandSubtitle ?? "",
+
           heroBadge: data.heroBadge ?? "",
           heroTitle: data.heroTitle ?? "",
           heroSubtitle: data.heroSubtitle ?? "",
@@ -90,6 +132,11 @@ const ManageSettings = () => {
 
           ctaTitle: data.ctaTitle ?? "",
           ctaSubtitle: data.ctaSubtitle ?? "",
+
+          socialLinks: (data.socialLinks as SocialLinks) ?? {},
+
+          privacyPolicyHtml: data.privacyPolicyHtml ?? "",
+          termsHtml: data.termsHtml ?? "",
         });
       } catch {
         toast({
@@ -105,7 +152,7 @@ const ManageSettings = () => {
     loadSettings();
   }, [toast]);
 
-  /* ================= TEXT CHANGE ================= */
+  /* ================= CHANGE HANDLERS ================= */
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -113,14 +160,23 @@ const ManageSettings = () => {
     setSettings((prev) => ({ ...prev, [name]: value }));
   };
 
-  /* ================= IMAGE UPLOAD HANDLER ================= */
+  const handleSocialChange = (key: keyof SocialLinks, value: string) => {
+    setSettings((prev) => ({
+      ...prev,
+      socialLinks: { ...prev.socialLinks, [key]: value },
+    }));
+  };
+
+  /* ================= IMAGE UPLOAD ================= */
   const uploadImage = async (
     file: File,
     endpoint: string,
-    field: "heroImage" | "aboutImage1" | "aboutImage2"
+    field: keyof Pick<
+      SettingsForm,
+      "brandLogo" | "heroImage" | "aboutImage1" | "aboutImage2"
+    >
   ) => {
-    setIsUploading(true);
-
+    setUploading(true);
     try {
       const token = localStorage.getItem("token");
       const formData = new FormData();
@@ -130,14 +186,12 @@ const ManageSettings = () => {
         `${import.meta.env.VITE_API_URL}/settings/${endpoint}`,
         {
           method: "POST",
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
           body: formData,
         }
       );
 
-      if (!res.ok) throw new Error("Upload failed");
+      if (!res.ok) throw new Error();
 
       const updated = await res.json();
 
@@ -146,64 +200,34 @@ const ManageSettings = () => {
         [field]: updated[field],
       }));
 
-      toast({
-        title: "Image uploaded",
-        description: "Image updated successfully",
-      });
+      toast({ title: "Image uploaded successfully" });
     } catch {
       toast({
-        title: "Upload failed",
-        description: "Could not upload image",
+        title: "Image upload failed",
         variant: "destructive",
       });
     } finally {
-      setIsUploading(false);
+      setUploading(false);
     }
   };
 
-  /* ================= SAVE TEXT SETTINGS ================= */
+  /* ================= SAVE ================= */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSaving(true);
+    setSaving(true);
 
     try {
       const token = localStorage.getItem("token");
+      await apiPut("/settings", settings, token || undefined);
 
-      await apiPut(
-        "/settings",
-        {
-          heroBadge: settings.heroBadge,
-          heroTitle: settings.heroTitle,
-          heroSubtitle: settings.heroSubtitle,
-
-          aboutHeading: settings.aboutHeading,
-          aboutText: settings.aboutText,
-
-          portfolioTitle: settings.portfolioTitle,
-          portfolioSubtitle: settings.portfolioSubtitle,
-          portfolioDescription: settings.portfolioDescription,
-
-          testimonialTitle: settings.testimonialTitle,
-          testimonialSubtitle: settings.testimonialSubtitle,
-
-          ctaTitle: settings.ctaTitle,
-          ctaSubtitle: settings.ctaSubtitle,
-        },
-        token || undefined
-      );
-
-      toast({
-        title: "Saved",
-        description: "Settings updated successfully",
-      });
+      toast({ title: "Settings saved successfully" });
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to save settings",
+        title: "Save failed",
         variant: "destructive",
       });
     } finally {
-      setIsSaving(false);
+      setSaving(false);
     }
   };
 
@@ -213,19 +237,37 @@ const ManageSettings = () => {
     <AdminLayout>
       <form onSubmit={handleSubmit} className="max-w-4xl space-y-8">
 
+        {/* BRAND */}
+        <Section title="Brand & Footer">
+          {settings.brandLogo && (
+            <img src={settings.brandLogo} className="h-20 object-contain" />
+          )}
+          <Input
+            type="file"
+            accept="image/*"
+            onChange={(e) =>
+              e.target.files &&
+              uploadImage(e.target.files[0], "brand-logo", "brandLogo")
+            }
+          />
+          <Textarea
+            name="brandSubtitle"
+            placeholder="Footer brand subtitle"
+            value={settings.brandSubtitle}
+            onChange={handleChange}
+          />
+        </Section>
+
         {/* HERO */}
         <Section title="Hero Section">
           <Input name="heroBadge" value={settings.heroBadge} onChange={handleChange} />
           <Input name="heroTitle" value={settings.heroTitle} onChange={handleChange} />
           <Textarea name="heroSubtitle" value={settings.heroSubtitle} onChange={handleChange} />
 
-          {settings.heroImage && (
-            <img src={settings.heroImage} className="rounded-lg max-h-56 object-cover" />
-          )}
+          {settings.heroImage && <img src={settings.heroImage} className="rounded-lg max-h-56" />}
 
           <Input
             type="file"
-            accept="image/*"
             onChange={(e) =>
               e.target.files &&
               uploadImage(e.target.files[0], "hero-image", "heroImage")
@@ -233,67 +275,44 @@ const ManageSettings = () => {
           />
         </Section>
 
-        {/* ABOUT */}
-        <Section title="About Section">
-          <Input name="aboutHeading" value={settings.aboutHeading} onChange={handleChange} />
-          <Textarea name="aboutText" value={settings.aboutText} onChange={handleChange} />
-
-          <div className="grid grid-cols-2 gap-4">
-            {[1, 2].map((i) => {
-              const field = i === 1 ? "aboutImage1" : "aboutImage2";
-              return (
-                <div key={i} className="space-y-2">
-                  {settings[field] && (
-                    <img
-                      src={settings[field]}
-                      className="rounded-lg h-40 w-full object-cover"
-                    />
-                  )}
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) =>
-                      e.target.files &&
-                      uploadImage(
-                        e.target.files[0],
-                        `about-image-${i}`,
-                        field as any
-                      )
-                    }
-                  />
-                </div>
-              );
-            })}
-          </div>
-
-          {isUploading && (
-            <p className="text-sm text-muted-foreground">Uploading image…</p>
+        {/* SOCIAL */}
+        <Section title="Social Media Links">
+          {(["facebook", "instagram", "twitter", "linkedin"] as const).map(
+            (key) => (
+              <Input
+                key={key}
+                placeholder={`${key} URL`}
+                value={settings.socialLinks[key] || ""}
+                onChange={(e) => handleSocialChange(key, e.target.value)}
+              />
+            )
           )}
         </Section>
 
-        {/* PORTFOLIO */}
-        <Section title="Portfolio Section">
-          <Input name="portfolioTitle" value={settings.portfolioTitle} onChange={handleChange} />
-          <Input name="portfolioSubtitle" value={settings.portfolioSubtitle} onChange={handleChange} />
-          <Textarea name="portfolioDescription" value={settings.portfolioDescription} onChange={handleChange} />
-        </Section>
-
-        {/* TESTIMONIAL */}
-        <Section title="Testimonials Section">
-          <Input name="testimonialTitle" value={settings.testimonialTitle} onChange={handleChange} />
-          <Textarea name="testimonialSubtitle" value={settings.testimonialSubtitle} onChange={handleChange} />
-        </Section>
-
-        {/* CTA */}
-        <Section title="CTA Section">
-          <Input name="ctaTitle" value={settings.ctaTitle} onChange={handleChange} />
-          <Textarea name="ctaSubtitle" value={settings.ctaSubtitle} onChange={handleChange} />
+        {/* LEGAL */}
+        <Section title="Legal Pages (HTML)">
+          <Textarea
+            rows={10}
+            placeholder="Privacy Policy (HTML allowed)"
+            value={settings.privacyPolicyHtml}
+            onChange={(e) =>
+              setSettings((p) => ({ ...p, privacyPolicyHtml: e.target.value }))
+            }
+          />
+          <Textarea
+            rows={10}
+            placeholder="Terms & Conditions (HTML allowed)"
+            value={settings.termsHtml}
+            onChange={(e) =>
+              setSettings((p) => ({ ...p, termsHtml: e.target.value }))
+            }
+          />
         </Section>
 
         <div className="flex justify-end">
-          <Button type="submit" variant="gold" disabled={isSaving}>
+          <Button variant="gold" type="submit" disabled={saving}>
             <Save size={16} className="mr-2" />
-            {isSaving ? "Saving..." : "Save Settings"}
+            {saving ? "Saving..." : "Save Settings"}
           </Button>
         </div>
       </form>
@@ -317,7 +336,7 @@ function Section({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card border border-border p-6 rounded-lg space-y-4"
+      className="bg-card border rounded-lg p-6 space-y-4"
     >
       <h2 className="font-serif text-xl font-bold">{title}</h2>
       {children}

@@ -1,11 +1,10 @@
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Calendar,
   Image,
   MessageSquare,
-  Settings,
   LogOut,
   Menu,
   X,
@@ -20,6 +19,12 @@ import {
 
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { apiGet } from "@/lib/api";
+
+/* ================= TYPES ================= */
+type SiteSettings = {
+  brandLogo?: string;
+};
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -32,18 +37,16 @@ const navItems = [
 
   { name: "Homepage", path: "/admin/settings", icon: Home },
   { name: "About", path: "/admin/about", icon: Info },
-
-  
   { name: "Contact Page", path: "/admin/contact-page", icon: Mail },
 
-  { name: "Events", path: "/admin/events", icon: Calendar },
   { name: "Categories", path: "/admin/categories", icon: List },
+  { name: "Events", path: "/admin/events", icon: Calendar },
 
   { name: "Gallery", path: "/admin/gallery", icon: Image },
   { name: "Testimonials", path: "/admin/testimonials", icon: MessageSquare },
 
-  // ✅ CONTACT FORM SUBMISSIONS
   { name: "Messages", path: "/admin/messages", icon: MessageSquare },
+
   { name: "Works Hero", path: "/admin/works-hero", icon: Layers },
   { name: "Gallery Hero", path: "/admin/gallery-hero", icon: Layers },
   { name: "Testimonials Hero", path: "/admin/testimonials-hero", icon: Layers },
@@ -54,6 +57,14 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [settings, setSettings] = useState<SiteSettings | null>(null);
+
+  /* ================= LOAD BRAND LOGO ================= */
+  useEffect(() => {
+    apiGet<SiteSettings>("/settings")
+      .then(setSettings)
+      .catch(() => {});
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -77,15 +88,21 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         }`}
       >
         <div className="flex flex-col h-full">
-          {/* Logo */}
+          {/* ================= BRAND ================= */}
           <div className="p-6 border-b border-border">
-            <Link to="/" className="flex items-center">
-              <span className="text-xl font-serif font-bold text-gradient-gold">
-                Elegance
-              </span>
-              <span className="text-xl font-serif font-light text-foreground ml-1">
-                Admin
-              </span>
+            <Link to="/" className="flex items-center gap-2">
+              {settings?.brandLogo ? (
+                <img
+                  src={settings.brandLogo}
+                  alt="Brand Logo"
+                  className="h-8 object-contain"
+                />
+              ) : (
+                <span className="text-xl font-serif font-bold text-gradient-gold">
+                  Brand
+                </span>
+              )}
+              <span className="text-sm text-muted-foreground">Admin</span>
             </Link>
           </div>
 

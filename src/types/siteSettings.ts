@@ -1,6 +1,9 @@
 export interface SiteSettings {
   id: string;
 
+  /* BRAND / FOOTER */
+  brandLogo: string;
+  brandSubtitle: string;
   // Hero
   heroBadge?: string | null;
   heroTitle: string;
@@ -26,6 +29,9 @@ export interface SiteSettings {
   ctaTitle: string;
   ctaSubtitle: string;
 
+  privacyPolicyHtml: string;
+  termsHtml: string;
+  
   // Contact
   contactEmail: string;
   contactPhone: string;
@@ -39,6 +45,7 @@ export interface SiteSettings {
     linkedin?: string;
   };
 
+  
   createdAt: string;
   updatedAt: string;
 }

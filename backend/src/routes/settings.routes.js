@@ -20,28 +20,41 @@ router.get("/", async (_req, res) => {
         data: {
           id: "settings",
 
+          // BRAND
+          brandLogo: "",
+          brandSubtitle: "",
+
+          // HERO
           heroBadge: "",
           heroTitle: "Your Event, Perfectly Planned",
           heroSubtitle: "We design unforgettable experiences",
           heroImage: "",
 
+          // ABOUT
           aboutHeading: "About Us",
           aboutText: "",
+          aboutImage1: "",
+          aboutImage2: "",
 
+          // PORTFOLIO
           portfolioTitle: "Our Portfolio",
           portfolioSubtitle: "Featured Events",
           portfolioDescription: "",
 
+          // TESTIMONIALS
           testimonialTitle: "Testimonials",
           testimonialSubtitle: "What our clients say",
 
+          // CTA
           ctaTitle: "Start Planning Your Event",
           ctaSubtitle: "Let’s make something unforgettable",
 
+          // CONTACT (footer fallback)
           contactEmail: "",
           contactPhone: "",
           address: "",
 
+          // SOCIAL
           socialLinks: {},
         },
       });
@@ -55,7 +68,7 @@ router.get("/", async (_req, res) => {
 });
 
 /* =====================================================
-   UPDATE SETTINGS
+   UPDATE SETTINGS (TEXT + JSON)
 ===================================================== */
 router.put("/", async (req, res) => {
   try {
@@ -81,9 +94,52 @@ router.put("/", async (req, res) => {
   }
 });
 
+/* =====================================================
+   UPLOAD BRAND LOGO (NEW ✅)
+   POST /api/settings/brand-logo
+===================================================== */
+router.post(
+  "/brand-logo",
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      // 🔹 Upload to Cloudinary
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: "site/brand" },
+        async (error, result) => {
+          if (error) throw error;
+
+          const updated = await prisma.siteSettings.upsert({
+            where: { id: "settings" },
+            update: { brandLogo: result.secure_url },
+            create: {
+              id: "settings",
+              brandLogo: result.secure_url,
+              heroTitle: "Your Event, Perfectly Planned",
+              heroSubtitle: "We design unforgettable experiences",
+              ctaTitle: "Start Planning Your Event",
+              ctaSubtitle: "Let’s make something unforgettable",
+            },
+          });
+
+          res.json({ brandLogo: updated.brandLogo });
+        }
+      );
+
+      stream.end(req.file.buffer);
+    } catch (err) {
+      console.error("Brand logo upload error:", err);
+      res.status(500).json({ error: "Image upload failed" });
+    }
+  }
+);
 
 /* =====================================================
-   UPLOAD HERO IMAGE (CLOUDINARY)
+   UPLOAD HERO IMAGE
 ===================================================== */
 router.post(
   "/hero-image",
@@ -94,26 +150,8 @@ router.post(
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-      // 🔹 get current settings
-      const settings = await prisma.siteSettings.findUnique({
-        where: { id: "settings" },
-      });
-
-      // 🔹 delete old image from cloudinary
-      if (settings?.heroImage) {
-        const publicId = settings.heroImage
-          .split("/")
-          .pop()
-          .split(".")[0];
-
-        await cloudinary.uploader.destroy(`hero/${publicId}`);
-      }
-
-      // 🔹 upload new image
-      const result = await cloudinary.uploader.upload_stream(
-        {
-          folder: "hero",
-        },
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: "hero" },
         async (error, result) => {
           if (error) throw error;
 
@@ -122,11 +160,11 @@ router.post(
             update: { heroImage: result.secure_url },
             create: {
               id: "settings",
+              heroImage: result.secure_url,
               heroTitle: "Your Event, Perfectly Planned",
               heroSubtitle: "We design unforgettable experiences",
               ctaTitle: "Start Planning Your Event",
               ctaSubtitle: "Let’s make something unforgettable",
-              heroImage: result.secure_url,
             },
           });
 
@@ -134,14 +172,13 @@ router.post(
         }
       );
 
-      result.end(req.file.buffer);
+      stream.end(req.file.buffer);
     } catch (err) {
       console.error("Hero upload error:", err);
       res.status(500).json({ error: "Image upload failed" });
     }
   }
 );
-
 
 /* =====================================================
    UPLOAD ABOUT IMAGE 1
@@ -153,16 +190,6 @@ router.post(
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
-      }
-
-      const settings = await prisma.siteSettings.findUnique({
-        where: { id: "settings" },
-      });
-
-      // delete old image
-      if (settings?.aboutImage1) {
-        const publicId = settings.aboutImage1.split("/").pop().split(".")[0];
-        await cloudinary.uploader.destroy(`about/${publicId}`);
       }
 
       const stream = cloudinary.uploader.upload_stream(
@@ -199,15 +226,6 @@ router.post(
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-      const settings = await prisma.siteSettings.findUnique({
-        where: { id: "settings" },
-      });
-
-      if (settings?.aboutImage2) {
-        const publicId = settings.aboutImage2.split("/").pop().split(".")[0];
-        await cloudinary.uploader.destroy(`about/${publicId}`);
-      }
-
       const stream = cloudinary.uploader.upload_stream(
         { folder: "about" },
         async (error, result) => {
@@ -229,7 +247,5 @@ router.post(
     }
   }
 );
-
-
 
 export default router;
