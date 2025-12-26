@@ -28,6 +28,7 @@ import ManageUsers from "./pages/admin/ManageUsers";
 import ManageAbout from "./pages/admin/ManageAbout"; 
 import ManageMessages from "./pages/admin/ManageMessages";
 import ManageContactPage from "./pages/admin/ManageContactPage";
+import ManageCategories from "./pages/admin/ManageCategories";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +73,15 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <ManageEvents />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/categories"
+              element={
+                <ProtectedRoute>
+                  <ManageCategories />
                 </ProtectedRoute>
               }
             />

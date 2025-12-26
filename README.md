@@ -1,6 +1,9 @@
-🎉 Event Management Platform (Lovable + React + Node)
+🎉 Event Management Platform
 
-A full-stack Event Management Platform built with React, TypeScript, Tailwind, Prisma, and PostgreSQL, featuring a powerful Admin Dashboard to manage events, gallery, testimonials, stats, users, and dynamic pages like About.
+Lovable + React + Node.js
+
+A full-stack Event Management Platform built with React, TypeScript, Tailwind CSS, Prisma, and PostgreSQL.
+It features a powerful Admin Dashboard to manage events, gallery, testimonials, stats, users, and fully dynamic pages like About and Contact.
 
 🌐 Live Project
 
@@ -42,12 +45,13 @@ Backend
 frontend/
  ├─ src/
  │  ├─ pages/
- │  │  ├─ public/        # Home, About, Works, Gallery, Testimonials
- │  │  └─ admin/         # Dashboard, Events, Gallery, Stats, About, Users
+ │  │  ├─ public/        # Home, About, Works, Gallery, Testimonials, Contact
+ │  │  └─ admin/         # Dashboard, Events, Gallery, Stats, About, Users, Messages
  │  ├─ components/
  │  ├─ contexts/
- │  ├─ lib/api.ts        # API helper
- │  ├─ lib/iconMap.ts    # Dynamic icon resolver
+ │  ├─ lib/
+ │  │  ├─ api.ts        # Central API helper
+ │  │  └─ iconMap.ts    # Dynamic icon resolver
  │  └─ types/
  │
 backend/
@@ -58,6 +62,8 @@ backend/
  │  ├─ testimonials.route.js
  │  ├─ stats.route.js
  │  ├─ about.route.js
+ │  ├─ contact.route.js
+ │  ├─ contactPage.route.js
  │  └─ users.route.js
  ├─ middlewares/
  ├─ prisma/
@@ -72,7 +78,9 @@ USER – Public access only
 
 Auth Flow
 
-Admin logs in → JWT issued
+Admin logs in
+
+JWT token issued
 
 Token stored in localStorage
 
@@ -82,13 +90,17 @@ API calls attach token in headers
 
 🔌 API CALLING SYSTEM (IMPORTANT)
 Central API Helper – lib/api.ts
-export async function apiGet<T>(url: string): Promise<T> {
-  const res = await fetch(`${API_URL}${url}`);
+export async function apiGet<T>(path: string): Promise<T> {
+  const res = await fetch(`${API_URL}${path}`);
   return res.json();
 }
 
-export async function apiPut(url: string, body: any, token?: string) {
-  return fetch(`${API_URL}${url}`, {
+export async function apiPut(
+  path: string,
+  body: any,
+  token?: string
+) {
+  return fetch(`${API_URL}${path}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -99,16 +111,16 @@ export async function apiPut(url: string, body: any, token?: string) {
 }
 
 
-✔ All frontend API calls go through this helper
-✔ Cleaner code
-✔ Easy auth handling
+✅ All frontend API calls go through this helper
+✅ Cleaner and consistent code
+✅ Centralized authentication handling
 
 📊 API ENDPOINTS OVERVIEW
 🔹 Events
 GET    /events
-POST   /events        (admin)
-PUT    /events/:id    (admin)
-DELETE /events/:id    (admin)
+POST   /events           (admin)
+PUT    /events/:id       (admin)
+DELETE /events/:id       (admin)
 
 🖼 Gallery
 GET    /gallery
@@ -120,16 +132,21 @@ GET    /testimonials
 POST   /testimonials       (admin)
 DELETE /testimonials/:id   (admin)
 
-📈 Stats (Reusable on any page)
+📈 Stats (Reusable)
 GET    /stats?page=HOME | ABOUT | TESTIMONIALS
 POST   /stats              (admin)
 PUT    /stats/:id          (admin)
 DELETE /stats/:id          (admin)
 
-📖 About Page (Dedicated)
+📖 About Page
 GET    /about
 PUT    /about              (admin)
 POST   /about/upload-hero  (admin + image)
+
+📬 Contact Page
+GET    /contact-page
+PUT    /contact-page       (admin)
+POST   /contact            (public form submission)
 
 👤 Users (Admin)
 GET    /users
@@ -140,23 +157,23 @@ DELETE /users/:id
 🧠 Dynamic Pages Explained
 ✅ About Page (Fully Dynamic)
 
-Hero Title & Subtitle
+Hero title & subtitle
 
-Story Section
+Story section
 
 Vision & Mission
 
 Values (icon + title + description)
 
-Years of Experience
+Years of experience
 
 Stats (reused from Admin Stats)
 
 All content is controlled from Admin → About Page.
 
-🎯 Values Section (Dynamic Icons)
+🎯 Values Section – Dynamic Icons
 
-Admin selects icon name → frontend resolves icon dynamically
+Admin selects icon name → frontend resolves icon dynamically.
 
 import * as Icons from "lucide-react";
 
@@ -177,7 +194,7 @@ Multer stores file in memory
 
 Cloudinary uploads image
 
-Secure URL saved to DB
+Secure URL saved in DB
 
 Frontend updates instantly
 
@@ -200,7 +217,7 @@ npm install
 npm run dev
 
 
-Backend must be running separately with .env configured.
+⚠️ Backend must be running separately with .env configured.
 
 🌍 Deployment
 Frontend
@@ -226,12 +243,12 @@ CLOUDINARY_URL=...
 
 ✔ Admin Dashboard
 ✔ Role-based access
-✔ Dynamic About Page
+✔ Dynamic About & Contact Pages
 ✔ Event-wise Gallery
 ✔ Featured Testimonials
 ✔ Reusable Stats system
-✔ Cloudinary uploads
-✔ Modern UI / Animations
+✔ Cloudinary image uploads
+✔ Modern UI & animations
 
 🧩 Future Enhancements
 
@@ -247,4 +264,4 @@ Audit logs
 
 👨‍💻 Maintained By
 
-Your Ineffable Design Solutions
+Ineffable Design Solutions

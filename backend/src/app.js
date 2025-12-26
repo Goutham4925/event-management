@@ -12,6 +12,7 @@ import userRoutes from "./routes/users.routes.js";
 import aboutRoutes from "./routes/about.route.js";
 import contactRoutes from "./routes/contact.route.js";
 import contactPageRoutes from "./routes/contactPage.route.js";
+import categoryRoutes from "./routes/categories.route.js";
 
 dotenv.config();
 
@@ -25,6 +26,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/about", aboutRoutes);
 app.use("/api/events", eventRoutes);
+app.use("/api/categories", categoryRoutes);
 app.use("/api/gallery", galleryRoutes);
 app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/contact", contactRoutes);

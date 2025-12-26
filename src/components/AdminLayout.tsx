@@ -14,6 +14,7 @@ import {
   Info,
   Mail,
   Home,
+  List,
 } from "lucide-react";
 
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,6 +36,8 @@ const navItems = [
   { name: "Contact Page", path: "/admin/contact-page", icon: Mail },
 
   { name: "Events", path: "/admin/events", icon: Calendar },
+  { name: "Categories", path: "/admin/categories", icon: List },
+
   { name: "Gallery", path: "/admin/gallery", icon: Image },
   { name: "Testimonials", path: "/admin/testimonials", icon: MessageSquare },
 

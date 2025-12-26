@@ -161,6 +161,18 @@ model GalleryImage {
 }
 
 // =========================
+// EVENT CATEGORIES
+// =========================
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  order     Int?
+  createdAt DateTime @default(now())
+}
+
+
+// =========================
 // TESTIMONIALS
 // =========================
 model Testimonial {
