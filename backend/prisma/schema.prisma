@@ -7,19 +7,147 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// =========================
-// USERS (AUTH + ROLES)
-// =========================
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String     @id @default(cuid())
+  email     String     @unique
   password  String
-
   role      UserRole   @default(USER)
   status    UserStatus @default(PENDING)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
 
+model SiteSettings {
+  id                   String   @id @default("settings")
+  heroBadge            String?
+  heroTitle            String
+  heroSubtitle         String
+  heroImage            String?
+  aboutHeading         String?
+  aboutText            String?
+  portfolioTitle       String?
+  portfolioSubtitle    String?
+  portfolioDescription String?
+  testimonialTitle     String?
+  testimonialSubtitle  String?
+  ctaTitle             String
+  ctaSubtitle          String
+  contactEmail         String?
+  contactPhone         String?
+  address              String?
+  socialLinks          Json?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  aboutImage1          String?
+  aboutImage2          String?
+  brandLogo            String?
+  brandSubtitle        String?
+  privacyPolicyHtml    String?
+  termsHtml            String?
+}
+
+model AboutPage {
+  id                    String   @id @default("about")
+  heroTitle             String
+  heroSubtitle          String
+  storyTitle            String?
+  storyContent          String?
+  vision                String?
+  mission               String?
+  yearsExperience       Int?
+  heroImage             String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  values                Json?
+  valuesSectionSubtitle String?
+  valuesSectionTitle    String?
+  heroBadge             String?
+  storyBadge            String?
+}
+
+model Stat {
+  id        String   @id @default(cuid())
+  label     String
+  value     String
+  page      StatPage
+  order     Int
+  createdAt DateTime @default(now())
+}
+
+model Event {
+  id          String         @id @default(cuid())
+  title       String
+  description String
+  category    String
+  date        DateTime
+  client      String
+  coverImage  String
+  featured    Boolean        @default(false)
+  order       Int?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  gallery     GalleryImage[]
+}
+
+model GalleryImage {
+  id        String   @id @default(cuid())
+  imageUrl  String
+  eventId   String?
+  featured  Boolean  @default(false)
+  highlight Boolean  @default(false)
+  createdAt DateTime @default(now())
+  event     Event?   @relation(fields: [eventId], references: [id])
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  order     Int?
+  createdAt DateTime @default(now())
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  message   String
+  rating    Float?
+  featured  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model ContactMessage {
+  id        String        @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  eventType String?
+  message   String
+  status    ContactStatus @default(NEW)
+  createdAt DateTime      @default(now())
+}
+
+model PageHero {
+  id        String   @id
+  badge     String?
+  title     String
+  subtitle  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model ContactPage {
+  id         String   @id @default("contact")
+  badge      String?
+  title      String
+  subtitle   String?
+  email      String?
+  phone      String?
+  address    String?
+  eventTypes Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 enum UserRole {
@@ -33,182 +161,10 @@ enum UserStatus {
   BLOCKED
 }
 
-
-// =========================
-// SITE SETTINGS (GLOBAL)
-// =========================
-model SiteSettings {
-  id String @id @default("settings")
-
-  // Brand
-  brandLogo       String?   // logo image URL
-  brandSubtitle   String?   // footer/about short text
-
-  // Hero
-  heroBadge    String?
-  heroTitle    String
-  heroSubtitle String
-  heroImage    String?
-
-  // About
-  aboutHeading String?
-  aboutText    String?
-  aboutImage1  String?   
-  aboutImage2  String?   
-
-  // Portfolio
-  portfolioTitle       String?
-  portfolioSubtitle    String?
-  portfolioDescription String?
-
-  // Testimonials
-  testimonialTitle    String?
-  testimonialSubtitle String?
-
-  // CTA
-  ctaTitle    String
-  ctaSubtitle String
-
-  // Contact                          //Not using Currently
-  contactEmail String?
-  contactPhone String?
-  address      String?
-
-  // Social                          
-  socialLinks Json?
-  
-  //  LEGAL PAGES (HTML)
-  privacyPolicyHtml String?
-  termsHtml         String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// =========================
-// ABOUT PAGE (DEDICATED)
-// =========================
-model AboutPage {
-  id String @id @default("about")
-
-  heroBadge       String?
-  heroTitle       String
-  heroSubtitle    String
-
-  storyBadge      String?
-  storyTitle      String?
-  storyContent    String?
-
-  vision          String?
-  mission         String?
-
-  valuesSectionTitle    String?
-  valuesSectionSubtitle String?
-  values          Json? 
-
-  yearsExperience Int?
-  heroImage       String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-
-
-
-// =========================
-// STATS (USED MULTIPLE PAGES)
-// =========================
-model Stat {
-  id        String   @id @default(cuid())
-  label     String
-  value     String
-  page      StatPage
-  order     Int
-
-  createdAt DateTime @default(now())
-}
-
 enum StatPage {
   HOME
   ABOUT
   TESTIMONIALS
-}
-
-// =========================
-// EVENTS
-// =========================
-model Event {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  category    String
-  date        DateTime
-  client      String
-  coverImage  String
-  featured    Boolean  @default(false)
-  order       Int?
-
-  gallery     GalleryImage[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-// =========================
-// GALLERY
-// =========================
-model GalleryImage {
-  id         String   @id @default(cuid())
-  imageUrl   String
-  eventId    String?
-  event      Event?  @relation(fields: [eventId], references: [id])
-
-  featured   Boolean @default(false)
-  highlight  Boolean @default(false)
-
-  createdAt  DateTime @default(now())
-}
-
-// =========================
-// EVENT CATEGORIES
-// =========================
-model Category {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  slug      String   @unique
-  order     Int?
-  createdAt DateTime @default(now())
-}
-
-
-// =========================
-// TESTIMONIALS
-// =========================
-model Testimonial {
-  id        String   @id @default(cuid())
-  name      String
-  role      String
-  message   String
-  rating    Float?
-  featured  Boolean  @default(false)
-
-  createdAt DateTime @default(now())
-}
-
-// =========================
-// CONTACT FORM SUBMISSIONS
-// =========================
-model ContactMessage {
-  id        String   @id @default(cuid())
-  name      String
-  email     String
-  phone     String?
-  eventType String?
-  message   String
-  status    ContactStatus @default(NEW)
-
-  createdAt DateTime @default(now())
 }
 
 enum ContactStatus {
@@ -216,37 +172,3 @@ enum ContactStatus {
   READ
   REPLIED
 }
-
-model PageHero {
-  id String @id
-  // id examples: "works", "gallery", "testimonials"
-
-  badge    String?
-  title    String
-  subtitle String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-
-// =========================
-// CONTACT PAGE CONTENT
-// =========================
-model ContactPage {
-  id String @id @default("contact")
-
-  badge    String?
-  title    String
-  subtitle String?
-
-  email   String?
-  phone   String?
-  address String?
-
-  eventTypes Json? // ["Wedding", "Corporate", "Birthday"]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
