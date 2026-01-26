@@ -39,7 +39,6 @@ Backend
 🧠 Role-based access control
 
 📁 Project Structure (High Level)
-frontend/
  ├─ src/
  │  ├─ pages/
  │  │  ├─ public/        # Home, About, Works, Gallery, Testimonials, Contact
