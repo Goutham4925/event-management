@@ -23,7 +23,8 @@ const app = express();
 const allowedOrigins = [
   "https://event-management-okn1.vercel.app",
   "http://localhost:5173",
-  "localhost:3001",
+  "http://localhost:3001",
+  "http://localhost:8080",
 ];
 
 app.use(
