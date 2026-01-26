@@ -1,5 +1,4 @@
 import express from "express";
-import serverless from "serverless-http";
 import cors from "cors";
 import dotenv from "dotenv";
 
@@ -20,30 +19,27 @@ dotenv.config();
 
 const app = express();
 
-/* ================= CORS FIX ================= */
+/* ================= CORS ================= */
 const allowedOrigins = [
-  "https://event-management-okn1.vercel.app", // your frontend
+  "https://event-management-okn1.vercel.app",
   "http://localhost:5173",
-  "http://localhost:3001"
+  "localhost:3001",
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin) return callback(null, true); // allow non-browser requests
+      if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("CORS not allowed for this origin: " + origin));
+        callback(null, false);
       }
     },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true
+    credentials: true,
   })
 );
-
-app.options("*", cors()); // handle preflight
-/* ============================================ */
+/* ======================================= */
 
 app.use(express.json());
 
@@ -62,9 +58,9 @@ app.use("/api/contact-page", contactPageRoutes);
 app.use("/api/page-hero", pageHeroRoutes);
 /* ======================================== */
 
+/* Health Check */
 app.get("/api/health", (_req, res) => {
-  res.json({ status: "Backend running on Vercel 🚀" });
+  res.json({ status: "OK" });
 });
 
-/* ===== EXPORT SERVERLESS HANDLER ===== */
-export const handler = serverless(app);
+export default app;
