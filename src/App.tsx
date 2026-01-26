@@ -33,6 +33,11 @@ import ManageWorksHero from "./pages/admin/ManageWorksHero";
 import ManageGalleryHero from "./pages/admin/ManageGalleryHero";
 import ManageTestimonialsHero from "./pages/admin/ManageTestimonialsHero";
 
+/* ----------------------------
+   GLOBAL UTIL
+---------------------------- */
+import ScrollToTop from "@/components/ui/ScrollToTop";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -48,6 +53,8 @@ const App = () => (
             v7_relativeSplatPath: true,
           }}
         >
+
+          <ScrollToTop />
           <Routes>
             {/* ================= PUBLIC ================= */}
             <Route path="/" element={<Index />} />
