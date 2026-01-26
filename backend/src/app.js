@@ -1,28 +1,53 @@
 import express from "express";
+import serverless from "serverless-http";
 import cors from "cors";
 import dotenv from "dotenv";
 
-import authRoutes from "./routes/auth.routes.js";
-import eventRoutes from "./routes/events.routes.js";
-import galleryRoutes from "./routes/gallery.routes.js";
-import testimonialRoutes from "./routes/testimonials.routes.js";
-import settingsRoutes from "./routes/settings.routes.js";
-import statsRoutes from "./routes/stats.routes.js";
-import userRoutes from "./routes/users.routes.js"; 
-import aboutRoutes from "./routes/about.route.js";
-import contactRoutes from "./routes/contact.route.js";
-import contactPageRoutes from "./routes/contactPage.route.js";
-import categoryRoutes from "./routes/categories.route.js";
-import pageHeroRoutes from "./routes/pageHero.route.js";
+import authRoutes from "../routes/auth.routes.js";
+import eventRoutes from "../routes/events.routes.js";
+import galleryRoutes from "../routes/gallery.routes.js";
+import testimonialRoutes from "../routes/testimonials.routes.js";
+import settingsRoutes from "../routes/settings.routes.js";
+import statsRoutes from "../routes/stats.routes.js";
+import userRoutes from "../routes/users.routes.js";
+import aboutRoutes from "../routes/about.route.js";
+import contactRoutes from "../routes/contact.route.js";
+import contactPageRoutes from "../routes/contactPage.route.js";
+import categoryRoutes from "../routes/categories.route.js";
+import pageHeroRoutes from "../routes/pageHero.route.js";
 
 dotenv.config();
 
 const app = express();
 
-app.use(cors());
+/* ================= CORS FIX ================= */
+const allowedOrigins = [
+  "https://event-management-okn1.vercel.app", // your frontend
+  "http://localhost:5173",
+  "http://localhost:3001"
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // allow non-browser requests
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS not allowed for this origin: " + origin));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true
+  })
+);
+
+app.options("*", cors()); // handle preflight
+/* ============================================ */
+
 app.use(express.json());
 
-// API ROUTES
+/* ============== API ROUTES ============== */
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/about", aboutRoutes);
@@ -32,13 +57,14 @@ app.use("/api/gallery", galleryRoutes);
 app.use("/api/testimonials", testimonialRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/settings", settingsRoutes);
-app.use("/api/stats", statsRoutes); 
+app.use("/api/stats", statsRoutes);
 app.use("/api/contact-page", contactPageRoutes);
 app.use("/api/page-hero", pageHeroRoutes);
+/* ======================================== */
 
-
-app.get("/", (_req, res) => {
-  res.json({ status: "Backend running ✅" });
+app.get("/api/health", (_req, res) => {
+  res.json({ status: "Backend running on Vercel 🚀" });
 });
 
-export default app;
+/* ===== EXPORT SERVERLESS HANDLER ===== */
+export const handler = serverless(app);
