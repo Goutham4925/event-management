@@ -22,6 +22,7 @@ const app = express();
 /* ================= CORS ================= */
 const allowedOrigins = [
   "https://event-management-okn1.vercel.app",
+  "https://blackbellproductions.com",
   "http://localhost:5173",
   "http://localhost:3001",
   "http://localhost:8080",
