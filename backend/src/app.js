@@ -2,18 +2,18 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 
-import authRoutes from "../routes/auth.routes.js";
-import eventRoutes from "../routes/events.routes.js";
-import galleryRoutes from "../routes/gallery.routes.js";
-import testimonialRoutes from "../routes/testimonials.routes.js";
-import settingsRoutes from "../routes/settings.routes.js";
-import statsRoutes from "../routes/stats.routes.js";
-import userRoutes from "../routes/users.routes.js";
-import aboutRoutes from "../routes/about.route.js";
-import contactRoutes from "../routes/contact.route.js";
-import contactPageRoutes from "../routes/contactPage.route.js";
-import categoryRoutes from "../routes/categories.route.js";
-import pageHeroRoutes from "../routes/pageHero.route.js";
+import authRoutes from "./routes/auth.routes.js";
+import eventRoutes from "./routes/events.routes.js";
+import galleryRoutes from "./routes/gallery.routes.js";
+import testimonialRoutes from "./routes/testimonials.routes.js";
+import settingsRoutes from "./routes/settings.routes.js";
+import statsRoutes from "./routes/stats.routes.js";
+import userRoutes from "./routes/users.routes.js";
+import aboutRoutes from "./routes/about.route.js";
+import contactRoutes from "./routes/contact.route.js";
+import contactPageRoutes from "./routes/contactPage.route.js";
+import categoryRoutes from "./routes/categories.route.js";
+import pageHeroRoutes from "./routes/pageHero.route.js";
 
 dotenv.config();
 
