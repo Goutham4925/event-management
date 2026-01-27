@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Trash2, Eye, Reply } from "lucide-react";
+import { Trash2, Eye, Reply, Phone } from "lucide-react";
 
 import AdminLayout from "@/components/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -27,8 +27,16 @@ const ManageMessages = () => {
   }, []);
 
   async function loadMessages() {
-    const data = await apiGetAuth<ContactMessage[]>("/contact", token);
-    setMessages(data);
+    try {
+      const data = await apiGetAuth<ContactMessage[]>("/contact", token);
+      setMessages(data);
+    } catch {
+      toast({
+        title: "Failed to load messages",
+        description: "Please refresh the page.",
+        variant: "destructive",
+      });
+    }
   }
 
   async function updateStatus(
@@ -71,6 +79,14 @@ const ManageMessages = () => {
                       ({m.email})
                     </span>
                   </h3>
+
+                  {/* 📞 PHONE NUMBER */}
+                  {m.phone && (
+                    <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Phone size={14} />
+                      {m.phone}
+                    </p>
+                  )}
 
                   {/* EVENT TYPE */}
                   {m.eventType && (
