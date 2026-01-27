@@ -153,6 +153,13 @@ const ManageSettings = () => {
     <AdminLayout>
       <form onSubmit={handleSubmit} className="max-w-4xl space-y-8">
 
+        <div className="flex justify-end">
+          <Button variant="gold" type="submit" disabled={saving || uploading}>
+            <Save size={16} className="mr-2" />
+            {saving ? "Saving..." : "Save Settings"}
+          </Button>
+        </div>
+        
         {/* BRAND */}
         <Section title="Brand & Footer">
           {settings.brandLogo && <img src={settings.brandLogo} className="h-20 object-contain" />}
@@ -212,13 +219,6 @@ const ManageSettings = () => {
           <Textarea rows={10} placeholder="Privacy Policy" value={settings.privacyPolicyHtml} onChange={(e) => setSettings((p) => ({ ...p, privacyPolicyHtml: e.target.value }))} />
           <Textarea rows={10} placeholder="Terms & Conditions" value={settings.termsHtml} onChange={(e) => setSettings((p) => ({ ...p, termsHtml: e.target.value }))} />
         </Section>
-
-        <div className="flex justify-end">
-          <Button variant="gold" type="submit" disabled={saving || uploading}>
-            <Save size={16} className="mr-2" />
-            {saving ? "Saving..." : "Save Settings"}
-          </Button>
-        </div>
       </form>
     </AdminLayout>
   );
