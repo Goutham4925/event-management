@@ -40,7 +40,7 @@ const navItems = [
   { name: "Contact Page", path: "/admin/contact-page", icon: Mail },
 
   { name: "Categories", path: "/admin/categories", icon: List },
-  { name: "Events", path: "/admin/events", icon: Calendar },
+  { name: "Works", path: "/admin/events", icon: Calendar },
 
   { name: "Gallery", path: "/admin/gallery", icon: Image },
   { name: "Testimonials", path: "/admin/testimonials", icon: MessageSquare },

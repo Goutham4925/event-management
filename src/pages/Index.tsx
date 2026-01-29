@@ -93,17 +93,18 @@ const Index = () => {
               {siteSettings.heroSubtitle}
             </p>
 
-            <div className="flex gap-4 justify-center">
-              <Link to="/works">
-                <Button variant="hero" size="xl">
-                  View Our Work
-                </Button>
-              </Link>
-              <Link to="/contact">
-                <Button variant="hero-outline" size="xl">
-                  Get in Touch
-                </Button>
-              </Link>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md mx-auto">
+            <Link to="/works" className="w-full sm:w-auto flex-1">
+              <Button variant="hero" size="xl" className="w-full">
+                View Our Work
+              </Button>
+            </Link>
+
+            <Link to="/contact" className="w-full sm:w-auto flex-1">
+              <Button variant="hero-outline" size="xl" className="w-full">
+                Get in Touch
+              </Button>
+            </Link>
             </div>
           </motion.div>
         </div>
@@ -147,7 +148,7 @@ const Index = () => {
 
           {events.length === 0 ? (
             <p className="text-center text-muted-foreground py-12">
-              No featured events yet
+              No featured works yet
             </p>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
@@ -160,7 +161,7 @@ const Index = () => {
           <div className="text-center">
             <Link to="/works">
               <Button variant="gold-outline" size="lg">
-                View All Events <ArrowRight size={18} />
+                View All Works <ArrowRight size={18} />
               </Button>
             </Link>
           </div>

@@ -178,10 +178,10 @@ const ManageEvents = () => {
 
       if (editing) {
         await apiPut(`/events/${editing.id}`, payload, token);
-        toast({ title: "Event updated" });
+        toast({ title: "Work updated" });
       } else {
         await apiPost("/events", payload, token);
-        toast({ title: "Event created" });
+        toast({ title: "Work created" });
       }
 
       setOpen(false);
@@ -217,9 +217,9 @@ const ManageEvents = () => {
       <div className="space-y-8">
         {/* Header */}
         <div className="flex justify-between items-center">
-          <h1 className="font-serif text-3xl font-bold">Manage Events</h1>
+          <h1 className="font-serif text-3xl font-bold">Manage Works</h1>
           <Button variant="gold" onClick={openCreate}>
-            <Plus size={18} /> Add Event
+            <Plus size={18} /> Add Work
           </Button>
         </div>
 
@@ -227,7 +227,7 @@ const ManageEvents = () => {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-3 text-muted-foreground" size={18} />
           <Input
-            placeholder="Search events..."
+            placeholder="Search works..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10"
@@ -239,7 +239,7 @@ const ManageEvents = () => {
           <table className="w-full">
             <thead className="border-b">
               <tr>
-                <th className="p-4 text-left">Event</th>
+                <th className="p-4 text-left">Work</th>
                 <th className="p-4">Category</th>
                 <th className="p-4">Date</th>
                 <th className="p-4">Client</th>
@@ -289,7 +289,7 @@ const ManageEvents = () => {
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>
-                {editing ? "Edit Event" : "Create Event"}
+                {editing ? "Edit Work" : "Create Work"}
               </DialogTitle>
               <DialogDescription>
                 Fill in the details below
@@ -329,7 +329,7 @@ const ManageEvents = () => {
                   checked={form.featured}
                   onChange={handleChange}
                 />
-                <span className="text-sm">Feature this event</span>
+                <span className="text-sm">Feature this work</span>
               </label>
 
               {form.coverImage && (

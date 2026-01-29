@@ -99,7 +99,7 @@ const ManageGallery = () => {
               onChange={(e) => setSelectedEvent(e.target.value)}
               className="w-full h-10 border rounded-md px-3 bg-background"
             >
-              <option value="">Select Event</option>
+              <option value="">Select Work</option>
               {events.map((e) => (
                 <option key={e.id} value={e.id}>
                   {e.title}
