@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Calendar, ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Event } from "@/types/event";
+import { optimizeImage } from "@/lib/optimizeImage";
 
 interface EventCardProps {
   event: Event;
@@ -17,9 +18,9 @@ const EventCard = ({ event, index }: EventCardProps) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={false}
       whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: index * 0.08 }}
+      transition={{ duration: 0.5, delay: index * 0.08 }}
       viewport={{ once: true }}
     >
       <Link
@@ -34,8 +35,10 @@ const EventCard = ({ event, index }: EventCardProps) => {
         {/* ================= IMAGE ================= */}
         <div className="relative aspect-[4/3] overflow-hidden">
           <img
-            src={event.coverImage}
+            src={optimizeImage(event.coverImage, 600)}
             alt={event.title}
+            loading="lazy"
+            decoding="async"
             className="
               w-full h-full object-cover
               transition-all duration-700

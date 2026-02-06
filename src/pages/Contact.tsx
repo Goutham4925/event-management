@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, Send } from "lucide-react";
 
@@ -14,12 +14,20 @@ type ContactPage = {
   badge?: string;
   title: string;
   subtitle?: string;
-
   email?: string;
   phone?: string;
   address?: string;
-
   eventTypes?: string[];
+};
+
+const fallbackPage: ContactPage = {
+  badge: "Get in Touch",
+  title: "Contact Us",
+  subtitle: "",
+  email: "",
+  phone: "",
+  address: "",
+  eventTypes: [],
 };
 
 const Contact = () => {
@@ -38,90 +46,87 @@ const Contact = () => {
 
   /* ================= LOAD PAGE CONTENT ================= */
   useEffect(() => {
+    let mounted = true;
+
     apiGetPublic<ContactPage | null>("/contact-page")
       .then((res) => {
-        setPage(
-          res ?? {
-            badge: "Get in Touch",
-            title: "Contact Us",
-            subtitle: "",
-            email: "",
-            phone: "",
-            address: "",
-            eventTypes: [],
-          }
-        );
+        if (!mounted) return;
+        setPage(res ?? fallbackPage);
       })
       .catch(() => {
-        setPage({
-          badge: "Get in Touch",
-          title: "Contact Us",
-          subtitle: "",
-          email: "",
-          phone: "",
-          address: "",
-          eventTypes: [],
-        });
+        if (mounted) setPage(fallbackPage);
       });
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-
   /* ================= HANDLERS ================= */
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
+  const handleChange = useCallback(
+    (
+      e: React.ChangeEvent<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >
+    ) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    },
+    []
+  );
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isSubmitting) return;
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (isSubmitting) return;
 
-    try {
-      setIsSubmitting(true);
+      try {
+        setIsSubmitting(true);
 
-      await apiPostPublic("/contact", {
-        name: formData.name.trim(),
-        email: formData.email.trim(),
-        phone: formData.phone.trim() || null,
-        eventType: formData.eventType || null,
-        message: formData.message.trim(),
-      });
+        await apiPostPublic("/contact", {
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim() || null,
+          eventType: formData.eventType || null,
+          message: formData.message.trim(),
+        });
 
-      toast({
-        title: "Message Sent!",
-        description: "Thank you for reaching out. We'll get back to you shortly.",
-      });
+        toast({
+          title: "Message Sent!",
+          description:
+            "Thank you for reaching out. We'll get back to you shortly.",
+        });
 
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        eventType: "",
-        message: "",
-      });
-    } catch (err: any) {
-      toast({
-        title: "Submission failed",
-        description:
-          err?.message || "Something went wrong. Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          eventType: "",
+          message: "",
+        });
+      } catch (err: any) {
+        toast({
+          title: "Submission failed",
+          description:
+            err?.message ||
+            "Something went wrong. Please try again later.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [formData, isSubmitting, toast]
+  );
 
+  /* ================= SAFE LOADING ================= */
   if (!page) {
     return (
       <Layout>
         <div className="min-h-screen flex items-center justify-center">
-          <p className="text-muted-foreground">Loading contact page...</p>
+          <p className="text-muted-foreground">
+            Loading contact page...
+          </p>
         </div>
       </Layout>
     );
@@ -160,6 +165,7 @@ const Contact = () => {
       {/* ================= CONTENT ================= */}
       <section className="py-24">
         <div className="container mx-auto px-4 grid lg:grid-cols-2 gap-16">
+
           {/* ================= INFO ================= */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -179,7 +185,9 @@ const Contact = () => {
                   <Mail className="text-primary" />
                   <div>
                     <h3 className="font-semibold">Email Us</h3>
-                    <p className="text-muted-foreground">{page.email}</p>
+                    <p className="text-muted-foreground">
+                      {page.email}
+                    </p>
                   </div>
                 </a>
               )}
@@ -192,7 +200,9 @@ const Contact = () => {
                   <Phone className="text-primary" />
                   <div>
                     <h3 className="font-semibold">Call Us</h3>
-                    <p className="text-muted-foreground">{page.phone}</p>
+                    <p className="text-muted-foreground">
+                      {page.phone}
+                    </p>
                   </div>
                 </a>
               )}
@@ -202,7 +212,9 @@ const Contact = () => {
                   <MapPin className="text-primary" />
                   <div>
                     <h3 className="font-semibold">Visit Us</h3>
-                    <p className="text-muted-foreground">{page.address}</p>
+                    <p className="text-muted-foreground">
+                      {page.address}
+                    </p>
                   </div>
                 </div>
               )}
@@ -229,6 +241,7 @@ const Contact = () => {
                     onChange={handleChange}
                     required
                   />
+
                   <Input
                     name="email"
                     type="email"
@@ -251,13 +264,7 @@ const Contact = () => {
                     name="eventType"
                     value={formData.eventType}
                     onChange={handleChange}
-                    className="
-                      h-10 w-full rounded-md border border-input bg-background
-                      px-3 py-2 text-sm
-                      ring-offset-background
-                      focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
-                      disabled:cursor-not-allowed disabled:opacity-50
-                    "
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   >
                     <option value="">Event Type</option>
                     {page.eventTypes?.map((e) => (
@@ -296,6 +303,7 @@ const Contact = () => {
               </form>
             </div>
           </motion.div>
+
         </div>
       </section>
     </Layout>

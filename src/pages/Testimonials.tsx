@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 
 import Layout from "@/components/Layout";
@@ -18,6 +18,8 @@ const Testimonials = () => {
 
   /* ================= LOAD DATA ================= */
   useEffect(() => {
+    let mounted = true;
+
     async function loadData() {
       try {
         const [ts, st, heroData] = await Promise.all([
@@ -26,25 +28,45 @@ const Testimonials = () => {
           apiGet<PageHero>("/page-hero/TESTIMONIALS"),
         ]);
 
+        if (!mounted) return;
+
         setTestimonials(ts || []);
         setStats(st || []);
         setHero(heroData);
       } catch (err) {
         console.error("Failed to load testimonials page", err);
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     }
 
     loadData();
+    return () => {
+      mounted = false;
+    };
   }, []);
+
+  /* ================= MEMOIZED LIST ================= */
+  const testimonialGrid = useMemo(
+    () =>
+      testimonials.map((testimonial, index) => (
+        <TestimonialCard
+          key={testimonial.id}
+          testimonial={testimonial}
+          index={index}
+        />
+      )),
+    [testimonials]
+  );
 
   /* ================= SAFE LOADING ================= */
   if (loading || !hero) {
     return (
       <Layout>
         <div className="min-h-screen flex items-center justify-center">
-          <p className="text-muted-foreground">Loading testimonials…</p>
+          <p className="text-muted-foreground">
+            Loading testimonials…
+          </p>
         </div>
       </Layout>
     );
@@ -83,17 +105,11 @@ const Testimonials = () => {
       {/* ================= TESTIMONIALS ================= */}
       <section className="py-24">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <TestimonialCard
-                key={testimonial.id}
-                testimonial={testimonial}
-                index={index}
-              />
-            ))}
-          </div>
-
-          {testimonials.length === 0 && (
+          {testimonials.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {testimonialGrid}
+            </div>
+          ) : (
             <p className="text-center text-muted-foreground mt-12">
               No testimonials yet
             </p>
@@ -101,7 +117,7 @@ const Testimonials = () => {
         </div>
       </section>
 
-      {/* ================= STATS (FROM DB) ================= */}
+      {/* ================= STATS ================= */}
       {stats.length > 0 && (
         <section className="py-20 bg-card">
           <div className="container mx-auto px-4">
@@ -116,7 +132,10 @@ const Testimonials = () => {
                   key={stat.id}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  transition={{
+                    duration: 0.5,
+                    delay: index * 0.1,
+                  }}
                   viewport={{ once: true }}
                   className="text-center"
                 >

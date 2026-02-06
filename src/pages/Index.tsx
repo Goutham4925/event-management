@@ -10,6 +10,8 @@ import TestimonialCard from "@/components/TestimonialCard";
 import { Button } from "@/components/ui/button";
 
 import { apiGet } from "@/lib/api";
+import { optimizeImage } from "@/lib/optimizeImage";
+
 import heroFallback from "@/assets/hero-wedding.jpg";
 
 import { SiteSettings } from "@/types/siteSettings";
@@ -29,12 +31,11 @@ const Index = () => {
       try {
         const [settings, allEvents, ts, st] = await Promise.all([
           apiGet<SiteSettings>("/settings"),
-          apiGet<Event[]>("/events"), // ✅ FETCH ALL EVENTS
+          apiGet<Event[]>("/events"),
           apiGet<Testimonial[]>("/testimonials?featured=true"),
           apiGet<Stat[]>("/stats?page=HOME"),
         ]);
 
-        // ✅ OPTION A: FILTER FEATURED EVENTS HERE
         const featuredEvents = allEvents.filter((e) => e.featured);
 
         setSiteSettings(settings);
@@ -61,14 +62,23 @@ const Index = () => {
 
   return (
     <Layout>
+
       {/* ================= HERO ================= */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
+
           <img
-            src={siteSettings.heroImage || heroFallback}
+            src={
+              siteSettings.heroImage
+                ? optimizeImage(siteSettings.heroImage, 1600)
+                : heroFallback
+            }
             alt="Hero"
             className="w-full h-full object-cover"
+            fetchPriority="high"
+            decoding="async"
           />
+
           <div className="absolute inset-0 bg-gradient-hero" />
         </div>
 
@@ -76,7 +86,7 @@ const Index = () => {
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
+            transition={{ duration: 0.6 }}
             className="max-w-4xl mx-auto"
           >
             {siteSettings.heroBadge && (
@@ -94,17 +104,17 @@ const Index = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md mx-auto">
-            <Link to="/works" className="w-full sm:w-auto flex-1">
-              <Button variant="hero" size="xl" className="w-full">
-                View Our Work
-              </Button>
-            </Link>
+              <Link to="/works" className="w-full sm:w-auto flex-1">
+                <Button variant="hero" size="xl" className="w-full">
+                  View Our Work
+                </Button>
+              </Link>
 
-            <Link to="/contact" className="w-full sm:w-auto flex-1">
-              <Button variant="hero-outline" size="xl" className="w-full">
-                Get in Touch
-              </Button>
-            </Link>
+              <Link to="/contact" className="w-full sm:w-auto flex-1">
+                <Button variant="hero-outline" size="xl" className="w-full">
+                  Get in Touch
+                </Button>
+              </Link>
             </div>
           </motion.div>
         </div>
@@ -174,17 +184,21 @@ const Index = () => {
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
             <span className="text-primary uppercase tracking-widest text-sm block mb-3">
               About Us
             </span>
+
             <h2 className="font-serif text-4xl font-bold mb-6">
               {siteSettings.aboutHeading}
             </h2>
+
             <p className="text-muted-foreground text-lg mb-6">
               {siteSettings.aboutText}
             </p>
+
             <Link to="/about">
               <Button variant="gold-outline" size="lg">
                 Learn More About Us <ArrowRight size={18} />
@@ -195,13 +209,16 @@ const Index = () => {
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
             viewport={{ once: true }}
             className="grid grid-cols-2 gap-4"
           >
             {siteSettings.aboutImage1 && (
               <div className="aspect-[3/4] rounded-lg overflow-hidden">
                 <img
-                  src={siteSettings.aboutImage1}
+                  src={optimizeImage(siteSettings.aboutImage1, 600)}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                 />
               </div>
@@ -210,7 +227,9 @@ const Index = () => {
             {siteSettings.aboutImage2 && (
               <div className="aspect-[3/4] rounded-lg overflow-hidden mt-8">
                 <img
-                  src={siteSettings.aboutImage2}
+                  src={optimizeImage(siteSettings.aboutImage2, 600)}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                 />
               </div>
@@ -260,6 +279,7 @@ const Index = () => {
           </Link>
         </div>
       </section>
+
     </Layout>
   );
 };

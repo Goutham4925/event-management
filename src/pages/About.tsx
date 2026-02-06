@@ -5,6 +5,7 @@ import Layout from "@/components/Layout";
 import SectionTitle from "@/components/SectionTitle";
 import { apiGet } from "@/lib/api";
 import { iconMap } from "@/lib/iconMap";
+import { optimizeImage } from "@/lib/optimizeImage";
 
 import { Stat } from "@/types/stat";
 
@@ -27,9 +28,8 @@ type AboutPage = {
   vision?: string;
   mission?: string;
 
-  /* ✅ NEW – dynamic icons */
-  visionIcon?: string;   // e.g. "Eye"
-  missionIcon?: string;  // e.g. "Target"
+  visionIcon?: string;
+  missionIcon?: string;
 
   heroImage?: string;
   yearsExperience?: number;
@@ -101,6 +101,7 @@ const About = () => {
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
             <span className="text-primary uppercase tracking-widest text-sm block mb-3">
@@ -120,13 +121,17 @@ const About = () => {
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
               viewport={{ once: true }}
               className="relative"
             >
               <div className="aspect-[4/5] rounded-lg overflow-hidden">
                 <img
-                  src={about.heroImage}
+                  src={optimizeImage(about.heroImage, 900)}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover"
+                  alt="About"
                 />
               </div>
 
@@ -145,13 +150,12 @@ const About = () => {
         </div>
       </section>
 
-      {/* ================= VISION & MISSION (DYNAMIC ICONS) ================= */}
+      {/* ================= VISION & MISSION ================= */}
       {(about.vision || about.mission) && (
         <section className="py-24 bg-card">
           <div className="container mx-auto px-4">
             <div className="grid md:grid-cols-2 gap-12">
 
-              {/* VISION */}
               {about.vision && (
                 <motion.div
                   initial={{ opacity: 0, y: 30 }}
@@ -178,7 +182,6 @@ const About = () => {
                 </motion.div>
               )}
 
-              {/* MISSION */}
               {about.mission && (
                 <motion.div
                   initial={{ opacity: 0, y: 30 }}
@@ -190,7 +193,8 @@ const About = () => {
                   <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-6">
                     {(() => {
                       const MissionIcon =
-                        iconMap[about.missionIcon || "Target"] || iconMap.Target;
+                        iconMap[about.missionIcon || "Target"] ||
+                        iconMap.Target;
                       return <MissionIcon className="text-primary" size={24} />;
                     })()}
                   </div>

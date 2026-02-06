@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Layout from "@/components/Layout";
 import Lightbox from "@/components/Lightbox";
 import { apiGet } from "@/lib/api";
+import { optimizeImage } from "@/lib/optimizeImage";
 import { PageHero } from "@/types/pageHero";
 
 /* =========================
@@ -119,8 +120,13 @@ const Gallery = () => {
                 >
                   <div className={isFeatured ? "aspect-square" : "aspect-[4/3]"}>
                     <img
-                      src={img.imageUrl}
+                      src={optimizeImage(
+                        img.imageUrl,
+                        isFeatured ? 900 : 600
+                      )}
                       alt={`Gallery image ${index + 1}`}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
                   </div>
@@ -152,7 +158,7 @@ const Gallery = () => {
 
       {/* ================= LIGHTBOX ================= */}
       <Lightbox
-        images={images.map((i) => i.imageUrl)}
+        images={images.map((i) => i.imageUrl)} // original full image
         currentIndex={currentIndex}
         isOpen={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
