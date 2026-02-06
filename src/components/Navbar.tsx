@@ -62,21 +62,12 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-20">
           {/* ================= BRAND ================= */}
           <Link to="/" className="flex items-center gap-3">
-            {settings?.brandLogo ? (
+            {settings?.brandLogo && (
               <img
                 src={settings.brandLogo}
                 alt="Brand Logo"
                 className="h-10 w-auto object-contain"
               />
-            ) : (
-              <>
-                <span className="text-2xl font-serif font-bold text-gradient-gold">
-                  Ineffable
-                </span>
-                <span className="text-2xl font-serif font-light text-foreground">
-                  Design
-                </span>
-              </>
             )}
           </Link>
 
