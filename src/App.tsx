@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,10 +8,12 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 
+// ✅ Eager load — no lazy() so it's included in the main bundle
+import Index from "./pages/Index";
+
 /* ================= LAZY LOADED PAGES ================= */
 
 /* PUBLIC */
-const Index = lazy(() => import("./pages/Index"));
 const About = lazy(() => import("./pages/About"));
 const Works = lazy(() => import("./pages/Works"));
 const EventDetails = lazy(() => import("./pages/EventDetails"));
@@ -37,6 +39,17 @@ const ManageWorksHero = lazy(() => import("./pages/admin/ManageWorksHero"));
 const ManageGalleryHero = lazy(() => import("./pages/admin/ManageGalleryHero"));
 const ManageTestimonialsHero = lazy(() => import("./pages/admin/ManageTestimonialsHero"));
 
+/* ================= PREFETCH HELPER ================= */
+
+// Silently prefetch public pages after the homepage has loaded
+const prefetchPublicRoutes = () => {
+  import("./pages/About");
+  import("./pages/Works");
+  import("./pages/Gallery");
+  import("./pages/Testimonials");
+  import("./pages/Contact");
+};
+
 /* ================= QUERY CLIENT ================= */
 
 const queryClient = new QueryClient({
@@ -50,183 +63,194 @@ const queryClient = new QueryClient({
 
 /* ================= APP ================= */
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
+const App = () => {
+  useEffect(() => {
+    // Wait until the browser is idle before prefetching other routes
+    if ("requestIdleCallback" in window) {
+      requestIdleCallback(prefetchPublicRoutes);
+    } else {
+      // Fallback for Safari
+      setTimeout(prefetchPublicRoutes, 2000);
+    }
+  }, []);
 
-        <BrowserRouter
-          future={{
-            v7_startTransition: true,
-            v7_relativeSplatPath: true,
-          }}
-        >
-          <ScrollToTop />
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
 
-          {/* Suspense handles lazy loading */}
-          <Suspense
-            fallback={
-              <div className="h-screen flex items-center justify-center">
-                Loading...
-              </div>
-            }
+          <BrowserRouter
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true,
+            }}
           >
-            <Routes>
-              {/* ================= PUBLIC ================= */}
-              <Route path="/" element={<Index />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/works" element={<Works />} />
-              <Route path="/works/:id" element={<EventDetails />} />
-              <Route path="/gallery" element={<Gallery />} />
-              <Route path="/testimonials" element={<Testimonials />} />
-              <Route path="/contact" element={<Contact />} />
+            <ScrollToTop />
 
-              {/* ================= ADMIN LOGIN ================= */}
-              <Route path="/admin/login" element={<AdminLogin />} />
+            <Suspense
+              fallback={
+                <div className="h-screen flex items-center justify-center">
+                  Loading...
+                </div>
+              }
+            >
+              <Routes>
+                {/* ================= PUBLIC ================= */}
+                <Route path="/" element={<Index />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/works" element={<Works />} />
+                <Route path="/works/:id" element={<EventDetails />} />
+                <Route path="/gallery" element={<Gallery />} />
+                <Route path="/testimonials" element={<Testimonials />} />
+                <Route path="/contact" element={<Contact />} />
 
-              {/* ================= ADMIN (PROTECTED) ================= */}
-              <Route
-                path="/admin/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
+                {/* ================= ADMIN LOGIN ================= */}
+                <Route path="/admin/login" element={<AdminLogin />} />
 
-              <Route
-                path="/admin/events"
-                element={
-                  <ProtectedRoute>
-                    <ManageEvents />
-                  </ProtectedRoute>
-                }
-              />
+                {/* ================= ADMIN (PROTECTED) ================= */}
+                <Route
+                  path="/admin/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/categories"
-                element={
-                  <ProtectedRoute>
-                    <ManageCategories />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/events"
+                  element={
+                    <ProtectedRoute>
+                      <ManageEvents />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/gallery"
-                element={
-                  <ProtectedRoute>
-                    <ManageGallery />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/categories"
+                  element={
+                    <ProtectedRoute>
+                      <ManageCategories />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/testimonials"
-                element={
-                  <ProtectedRoute>
-                    <ManageTestimonials />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/gallery"
+                  element={
+                    <ProtectedRoute>
+                      <ManageGallery />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/settings"
-                element={
-                  <ProtectedRoute>
-                    <ManageSettings />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/testimonials"
+                  element={
+                    <ProtectedRoute>
+                      <ManageTestimonials />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/stats"
-                element={
-                  <ProtectedRoute>
-                    <AdminStats />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/settings"
+                  element={
+                    <ProtectedRoute>
+                      <ManageSettings />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/users"
-                element={
-                  <ProtectedRoute>
-                    <ManageUsers />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/stats"
+                  element={
+                    <ProtectedRoute>
+                      <AdminStats />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/about"
-                element={
-                  <ProtectedRoute>
-                    <ManageAbout />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/users"
+                  element={
+                    <ProtectedRoute>
+                      <ManageUsers />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/messages"
-                element={
-                  <ProtectedRoute>
-                    <ManageMessages />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/about"
+                  element={
+                    <ProtectedRoute>
+                      <ManageAbout />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/contact-page"
-                element={
-                  <ProtectedRoute>
-                    <ManageContactPage />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/messages"
+                  element={
+                    <ProtectedRoute>
+                      <ManageMessages />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/works-hero"
-                element={
-                  <ProtectedRoute>
-                    <ManageWorksHero />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/contact-page"
+                  element={
+                    <ProtectedRoute>
+                      <ManageContactPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/gallery-hero"
-                element={
-                  <ProtectedRoute>
-                    <ManageGalleryHero />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/works-hero"
+                  element={
+                    <ProtectedRoute>
+                      <ManageWorksHero />
+                    </ProtectedRoute>
+                  }
+                />
 
-              <Route
-                path="/admin/testimonials-hero"
-                element={
-                  <ProtectedRoute>
-                    <ManageTestimonialsHero />
-                  </ProtectedRoute>
-                }
-              />
+                <Route
+                  path="/admin/gallery-hero"
+                  element={
+                    <ProtectedRoute>
+                      <ManageGalleryHero />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* ================= REDIRECT ================= */}
-              <Route
-                path="/admin"
-                element={<Navigate to="/admin/login" replace />}
-              />
+                <Route
+                  path="/admin/testimonials-hero"
+                  element={
+                    <ProtectedRoute>
+                      <ManageTestimonialsHero />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* ================= 404 ================= */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+                {/* ================= REDIRECT ================= */}
+                <Route
+                  path="/admin"
+                  element={<Navigate to="/admin/login" replace />}
+                />
+
+                {/* ================= 404 ================= */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
