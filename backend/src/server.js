@@ -16,8 +16,8 @@ app.listen(PORT, () => {
 cron.schedule("*/10 * * * *", async () => {
   try {
     await prisma.$queryRaw`SELECT 1`;
-    console.log("🟢 Database keep-alive ping sent");
+    // console.log("🟢 Database keep-alive ping sent");
   } catch (error) {
-    console.error("🔴 Keep-alive error:", error.message);
+    // console.error("🔴 Keep-alive error:", error.message);
   }
 });
