@@ -14,8 +14,13 @@ import contactRoutes from "./routes/contact.route.js";
 import contactPageRoutes from "./routes/contactPage.route.js";
 import categoryRoutes from "./routes/categories.route.js";
 import pageHeroRoutes from "./routes/pageHero.route.js";
+import prisma from "./config/db.js";
+
+
 
 dotenv.config();
+
+
 
 const app = express();
 
@@ -62,8 +67,16 @@ app.use("/api/page-hero", pageHeroRoutes);
 /* ======================================== */
 
 /* Health Check */
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "OK" });
+app.get("/api/health", async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: "OK", database: "awake" });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: error.message,
+    });
+  }
 });
 
 export default app;
