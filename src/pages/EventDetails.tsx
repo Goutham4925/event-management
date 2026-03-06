@@ -43,7 +43,7 @@ const EventDetails = () => {
     return (
       <Layout>
         <div className="min-h-screen flex items-center justify-center">
-          <p className="text-muted-foreground">Loading event…</p>
+          <p className="text-muted-foreground">Loading work…</p>
         </div>
       </Layout>
     );
@@ -54,7 +54,7 @@ const EventDetails = () => {
       <Layout>
         <div className="min-h-screen flex items-center justify-center text-center">
           <h1 className="font-serif text-4xl font-bold mb-4">
-            Event Not Found
+            Work Not Found
           </h1>
           <Link to="/works">
             <Button variant="gold-outline">
@@ -152,7 +152,7 @@ const EventDetails = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             <h2 className="font-serif text-2xl font-bold mb-6">
-              About This Event
+              About This Work
             </h2>
             <p className="text-muted-foreground text-lg leading-relaxed mb-12">
               {event.description}
@@ -169,7 +169,7 @@ const EventDetails = () => {
             className="container mx-auto px-4"
           >
             <h2 className="font-serif text-2xl font-bold text-center mb-8">
-              Event Gallery
+              Work Gallery
             </h2>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">

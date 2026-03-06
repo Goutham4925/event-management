@@ -16,11 +16,7 @@ import categoryRoutes from "./routes/categories.route.js";
 import pageHeroRoutes from "./routes/pageHero.route.js";
 import prisma from "./config/db.js";
 
-
-
 dotenv.config();
-
-
 
 const app = express();
 
