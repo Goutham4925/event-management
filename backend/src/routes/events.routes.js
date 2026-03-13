@@ -12,7 +12,6 @@ const router = express.Router();
 router.get("/", async (_req, res) => {
   try {
 
-    // Vercel edge cache
     res.setHeader(
       "Cache-Control",
       "s-maxage=60, stale-while-revalidate"
@@ -25,6 +24,7 @@ router.get("/", async (_req, res) => {
         title: true,
         description: true,
         coverImage: true,
+        featured: true,
         createdAt: true
       }
     });
@@ -39,7 +39,6 @@ router.get("/", async (_req, res) => {
     });
   }
 });
-
 
 /* ===============================
    GET SINGLE EVENT (PUBLIC)
