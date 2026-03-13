@@ -38,9 +38,34 @@ app.use(
 );
 /* ======================================= */
 
+/* ================= MIDDLEWARE ================= */
 app.use(express.json());
+/* ============================================== */
 
-/* ============== API ROUTES ============== */
+
+/* ================= ROOT ROUTE ================= */
+app.get("/", (req, res) => {
+  res.json({
+    status: "OK",
+    service: "Black Bell Productions API",
+    message: "API is running",
+    endpoints: [
+      "/api/events",
+      "/api/settings",
+      "/api/categories",
+      "/api/gallery",
+      "/api/testimonials",
+      "/api/stats",
+      "/api/contact",
+      "/api/contact-page",
+      "/api/about",
+    ],
+  });
+});
+/* ============================================= */
+
+
+/* ================= API ROUTES ================= */
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/about", aboutRoutes);
@@ -53,13 +78,19 @@ app.use("/api/settings", settingsRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/contact-page", contactPageRoutes);
 app.use("/api/page-hero", pageHeroRoutes);
-/* ======================================== */
+/* ============================================= */
 
-/* Health Check */
+
+/* ================= HEALTH CHECK ================= */
 app.get("/api/health", async (_req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
-    res.json({ status: "OK", database: "awake" });
+
+    res.json({
+      status: "OK",
+      database: "awake",
+      service: "Black Bell Productions API",
+    });
   } catch (error) {
     res.status(500).json({
       status: "error",
@@ -67,5 +98,17 @@ app.get("/api/health", async (_req, res) => {
     });
   }
 });
+/* =============================================== */
+
+
+/* ================= 404 HANDLER ================= */
+app.use((req, res) => {
+  res.status(404).json({
+    error: "Route not found",
+    path: req.originalUrl,
+  });
+});
+/* =============================================== */
+
 
 export default app;
