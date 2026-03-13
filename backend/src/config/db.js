@@ -5,10 +5,11 @@ const globalForPrisma = globalThis;
 const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({
-    log: ["error", "warn"],
+    log: ["error"],
   });
 
-if (process.env.NODE_ENV !== "production") {
+// Always cache the Prisma instance
+if (!globalForPrisma.prisma) {
   globalForPrisma.prisma = prisma;
 }
 
