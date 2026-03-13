@@ -11,14 +11,35 @@ const router = express.Router();
 ================================ */
 router.get("/", async (_req, res) => {
   try {
+
+    // Vercel edge cache
+    res.setHeader(
+      "Cache-Control",
+      "s-maxage=60, stale-while-revalidate"
+    );
+
     const events = await prisma.event.findMany({
-      include: { gallery: true },
       orderBy: { createdAt: "desc" },
+
+      // avoid heavy joins
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        description: true,
+        coverImage: true,
+        createdAt: true,
+      },
     });
+
     res.json(events);
+
   } catch (err) {
     console.error("GET /events error:", err);
-    res.status(500).json({ error: "Failed to fetch events" });
+
+    res.status(500).json({
+      error: "Failed to fetch events",
+    });
   }
 });
 
@@ -28,21 +49,35 @@ router.get("/", async (_req, res) => {
 ================================ */
 router.get("/:id", async (req, res) => {
   try {
+
+    res.setHeader(
+      "Cache-Control",
+      "s-maxage=60, stale-while-revalidate"
+    );
+
     const event = await prisma.event.findUnique({
       where: { id: req.params.id },
+
+      // load gallery only when needed
       include: {
         gallery: true,
       },
     });
 
     if (!event) {
-      return res.status(404).json({ error: "Event not found" });
+      return res.status(404).json({
+        error: "Event not found",
+      });
     }
 
     res.json(event);
+
   } catch (err) {
     console.error("GET /events/:id error:", err);
-    res.status(500).json({ error: "Failed to fetch event" });
+
+    res.status(500).json({
+      error: "Failed to fetch event",
+    });
   }
 });
 
@@ -56,81 +91,109 @@ router.post(
   upload.single("image"),
   async (req, res) => {
     try {
+
       if (!req.file) {
-        return res.status(400).json({ error: "No image uploaded" });
+        return res.status(400).json({
+          error: "No image uploaded",
+        });
       }
 
-      const uploadToCloudinary = () =>
-        new Promise((resolve, reject) => {
-          const stream = cloudinary.uploader.upload_stream(
-            {
-              folder: "events/covers",
-              resource_type: "image",
-            },
-            (error, result) => {
-              if (error) reject(error);
-              else resolve(result);
-            }
-          );
+      const result = await new Promise((resolve, reject) => {
 
-          stream.end(req.file.buffer);
-        });
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder: "events/covers",
+            resource_type: "image",
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
 
-      const result = await uploadToCloudinary();
+        stream.end(req.file.buffer);
+      });
 
       res.json({
         url: result.secure_url,
       });
+
     } catch (err) {
       console.error("UPLOAD COVER error:", err);
-      res.status(500).json({ error: "Image upload failed" });
+
+      res.status(500).json({
+        error: "Image upload failed",
+      });
     }
   }
 );
+
 
 /* ===============================
    CREATE EVENT (ADMIN)
 ================================ */
 router.post("/", protect, async (req, res) => {
   try {
+
     const event = await prisma.event.create({
       data: req.body,
     });
+
     res.json(event);
+
   } catch (err) {
     console.error("POST /events error:", err);
-    res.status(500).json({ error: "Failed to create event" });
+
+    res.status(500).json({
+      error: "Failed to create event",
+    });
   }
 });
+
 
 /* ===============================
    UPDATE EVENT (ADMIN)
 ================================ */
 router.put("/:id", protect, async (req, res) => {
   try {
+
     const event = await prisma.event.update({
       where: { id: req.params.id },
       data: req.body,
     });
+
     res.json(event);
+
   } catch (err) {
     console.error("PUT /events error:", err);
-    res.status(500).json({ error: "Failed to update event" });
+
+    res.status(500).json({
+      error: "Failed to update event",
+    });
   }
 });
+
 
 /* ===============================
    DELETE EVENT (ADMIN)
 ================================ */
 router.delete("/:id", protect, async (req, res) => {
   try {
+
     await prisma.event.delete({
       where: { id: req.params.id },
     });
-    res.json({ success: true });
+
+    res.json({
+      success: true,
+    });
+
   } catch (err) {
     console.error("DELETE /events error:", err);
-    res.status(500).json({ error: "Failed to delete event" });
+
+    res.status(500).json({
+      error: "Failed to delete event",
+    });
   }
 });
 
