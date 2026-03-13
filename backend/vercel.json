@@ -1,13 +1,13 @@
 {
   "functions": {
-    "api/index.js": {
+    "backend/api/index.ts": {
       "maxDuration": 30
     }
   },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/index"
+      "destination": "/backend/api/index"
     }
   ]
 }
