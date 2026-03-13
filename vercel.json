@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://event-management-qc49.onrender.com/api/$1"
+      "destination": "https://event-management-eta-eight.vercel.app/api/$1"
     },
     {
       "source": "/(.*)",
