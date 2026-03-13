@@ -13,6 +13,10 @@ import { useEffect, useState } from "react";
 import { apiGet } from "@/lib/api";
 import LegalModal from "@/components/ui/LegalModal";
 
+/* ================= FALLBACK LOGO ================= */
+const FALLBACK_LOGO =
+  "https://res.cloudinary.com/dnrja1z1b/image/upload/v1773306031/site/brand/i6j4oduttyaiscowg2lo.png";
+
 /* ================= TYPES ================= */
 type Category = {
   id: string;
@@ -36,10 +40,10 @@ type SiteSettings = {
   brandLogo?: string;
   brandSubtitle?: string;
   socialLinks?: SocialLinks;
-
   privacyPolicyHtml?: string;
   termsHtml?: string;
 };
+
 /* ================= URL NORMALIZER ================= */
 function normalizeUrl(url?: string) {
   if (!url) return undefined;
@@ -77,6 +81,8 @@ const Footer = () => {
     loadFooterData();
   }, []);
 
+  const logoSrc = settings?.brandLogo || FALLBACK_LOGO;
+
   return (
     <>
       <footer className="bg-card border-t border-border">
@@ -88,17 +94,18 @@ const Footer = () => {
             {/* ================= BRAND ================= */}
             <div className="space-y-4">
               <Link to="/" className="inline-block">
-                {settings?.brandLogo ? (
-                  <img
-                    src={settings.brandLogo}
-                    alt="Brand Logo"
-                    className="h-12 object-contain"
-                  />
-                ) : (
-                  <span className="text-2xl font-serif font-bold text-gradient-gold">
-                    Brand
-                  </span>
-                )}
+                <img
+                  src={logoSrc}
+                  alt="Brand Logo"
+                  className="h-12 object-contain"
+                  loading="lazy"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    if (target.src !== FALLBACK_LOGO) {
+                      target.src = FALLBACK_LOGO;
+                    }
+                  }}
+                />
               </Link>
 
               {settings?.brandSubtitle && (

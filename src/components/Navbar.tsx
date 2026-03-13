@@ -15,6 +15,10 @@ const navLinks = [
   { name: "Contact", path: "/contact" },
 ];
 
+/* ================= FALLBACK LOGO ================= */
+const FALLBACK_LOGO =
+  "https://res.cloudinary.com/dnrja1z1b/image/upload/v1773306031/site/brand/i6j4oduttyaiscowg2lo.png";
+
 /* ================= TYPES ================= */
 type SiteSettings = {
   brandLogo?: string;
@@ -50,6 +54,9 @@ const Navbar = () => {
     setIsOpen(false);
   }, [location]);
 
+  /* ================= LOGO SOURCE ================= */
+  const logoSrc = settings?.brandLogo || FALLBACK_LOGO;
+
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
@@ -62,13 +69,12 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-20">
           {/* ================= BRAND ================= */}
           <Link to="/" className="flex items-center gap-3">
-            {settings?.brandLogo && (
-              <img
-                src={settings.brandLogo}
-                alt="Brand Logo"
-                className="h-10 w-auto object-contain"
-              />
-            )}
+            <img
+              src={logoSrc}
+              alt="Brand Logo"
+              className="h-10 w-auto object-contain"
+              loading="eager"
+            />
           </Link>
 
           {/* ================= DESKTOP NAV ================= */}
