@@ -20,16 +20,13 @@ router.get("/", async (_req, res) => {
 
     const events = await prisma.event.findMany({
       orderBy: { createdAt: "desc" },
-
-      // avoid heavy joins
       select: {
         id: true,
         title: true,
         slug: true,
-        description: true,
         coverImage: true,
-        createdAt: true,
-      },
+        createdAt: true
+      }
     });
 
     res.json(events);
@@ -38,7 +35,7 @@ router.get("/", async (_req, res) => {
     console.error("GET /events error:", err);
 
     res.status(500).json({
-      error: "Failed to fetch events",
+      error: "Failed to fetch events"
     });
   }
 });
