@@ -16,7 +16,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 import {
-  apiGet,
+  apiGetAuth,
   apiPost,
   apiPut,
   apiDelete,
@@ -73,8 +73,10 @@ const ManageEvents = () => {
   }, []);
 
   async function loadEvents() {
+    if (!token) return;
+
     try {
-      const data = await apiGet<Event[]>("/events");
+      const data = await apiGetAuth<Event[]>("/events", token);
       setEvents(data);
     } catch {
       toast({
@@ -86,8 +88,10 @@ const ManageEvents = () => {
   }
 
   async function loadCategories() {
+    if (!token) return;
+
     try {
-      const data = await apiGet<Category[]>("/categories");
+      const data = await apiGetAuth<Category[]>("/categories", token);
       setCategories(data);
     } catch {
       toast({

@@ -24,6 +24,9 @@ router.get("/", async (_req, res) => {
         id: true,
         title: true,
         description: true,
+        category: true,
+        date: true,
+        client: true,
         coverImage: true,
         featured: true,
         createdAt: true
