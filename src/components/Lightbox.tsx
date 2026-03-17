@@ -12,9 +12,16 @@ interface LightboxProps {
 }
 
 const Lightbox = ({ images, currentIndex, isOpen, onClose, onNext, onPrev }: LightboxProps) => {
+  const safeImages = Array.isArray(images) ? images : [];
+  const hasImages = safeImages.length > 0;
+  const safeIndex =
+    hasImages && currentIndex >= 0 && currentIndex < safeImages.length
+      ? currentIndex
+      : 0;
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isOpen) return;
+      if (!isOpen || !hasImages) return;
       
       if (e.key === 'Escape') onClose();
       if (e.key === 'ArrowRight') onNext();
@@ -23,7 +30,7 @@ const Lightbox = ({ images, currentIndex, isOpen, onClose, onNext, onPrev }: Lig
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose, onNext, onPrev]);
+  }, [hasImages, isOpen, onClose, onNext, onPrev]);
 
   useEffect(() => {
     if (isOpen) {
@@ -38,7 +45,7 @@ const Lightbox = ({ images, currentIndex, isOpen, onClose, onNext, onPrev }: Lig
 
   return (
     <AnimatePresence>
-      {isOpen && (
+      {isOpen && hasImages && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -57,7 +64,7 @@ const Lightbox = ({ images, currentIndex, isOpen, onClose, onNext, onPrev }: Lig
           </button>
 
           {/* Navigation Buttons */}
-          {images.length > 1 && (
+          {safeImages.length > 1 && (
             <>
               <button
                 onClick={(e) => {
@@ -93,16 +100,16 @@ const Lightbox = ({ images, currentIndex, isOpen, onClose, onNext, onPrev }: Lig
             onClick={(e) => e.stopPropagation()}
           >
             <img
-              src={images[currentIndex]}
-              alt={`Gallery image ${currentIndex + 1}`}
+              src={safeImages[safeIndex]}
+              alt={`Gallery image ${safeIndex + 1}`}
               className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-elevated"
             />
           </motion.div>
 
           {/* Image Counter */}
-          {images.length > 1 && (
+          {safeImages.length > 1 && (
             <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-foreground text-sm">
-              {currentIndex + 1} / {images.length}
+              {safeIndex + 1} / {safeImages.length}
             </div>
           )}
         </motion.div>

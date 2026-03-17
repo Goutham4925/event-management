@@ -23,6 +23,13 @@ const EventDetails = () => {
   /* ================= LOAD EVENTS ================= */
   useEffect(() => {
     async function loadData() {
+      if (!id) {
+        setEvent(null);
+        setEvents([]);
+        setLoading(false);
+        return;
+      }
+
       try {
         const [allEvents, eventDetails] = await Promise.all([
           apiGet<Event[]>("/events"),
@@ -93,12 +100,16 @@ const EventDetails = () => {
   const gallery = event.gallery ?? [];
 
   const nextImage = () => {
+    if (gallery.length === 0) return;
+
     setCurrentImageIndex(
       (prev) => (prev + 1) % gallery.length
     );
   };
 
   const prevImage = () => {
+    if (gallery.length === 0) return;
+
     setCurrentImageIndex(
       (prev) => (prev - 1 + gallery.length) % gallery.length
     );
