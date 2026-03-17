@@ -24,11 +24,16 @@ const EventDetails = () => {
   useEffect(() => {
     async function loadData() {
       try {
-        const allEvents = await apiGet<Event[]>("/events");
-        setEvents(allEvents);
+        const [allEvents, eventDetails] = await Promise.all([
+          apiGet<Event[]>("/events"),
+          apiGet<Event>(`/events/${id}`),
+        ]);
 
-        const found = allEvents.find((e) => e.id === id);
-        setEvent(found || null);
+        setEvents(allEvents);
+        setEvent({
+          ...eventDetails,
+          gallery: eventDetails.gallery ?? [],
+        });
       } catch (err) {
         console.error("Failed to load event", err);
       } finally {
@@ -85,16 +90,17 @@ const EventDetails = () => {
     setLightboxOpen(true);
   };
 
+  const gallery = event.gallery ?? [];
+
   const nextImage = () => {
     setCurrentImageIndex(
-      (prev) => (prev + 1) % event.gallery.length
+      (prev) => (prev + 1) % gallery.length
     );
   };
 
   const prevImage = () => {
     setCurrentImageIndex(
-      (prev) => (prev - 1 + event.gallery.length) %
-        event.gallery.length
+      (prev) => (prev - 1 + gallery.length) % gallery.length
     );
   };
 
@@ -161,7 +167,7 @@ const EventDetails = () => {
         </div>
 
         {/* ================= GALLERY ================= */}
-        {event.gallery.length > 0 && (
+        {gallery.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -173,7 +179,7 @@ const EventDetails = () => {
             </h2>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {event.gallery.map((img, index) => (
+              {gallery.map((img, index) => (
                 <div
                   key={img.id}
                   className="aspect-[4/3] rounded-lg overflow-hidden cursor-pointer group"
@@ -196,7 +202,7 @@ const EventDetails = () => {
       </section>
 
       <Lightbox
-        images={event.gallery.map((g) => g.imageUrl)}
+        images={gallery.map((g) => g.imageUrl)}
         currentIndex={currentImageIndex}
         isOpen={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
