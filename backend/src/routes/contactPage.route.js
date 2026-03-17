@@ -1,6 +1,7 @@
 import express from "express";
 import prisma from "../config/db.js";
 import { protect } from "../middlewares/auth.middleware.js";
+import { formatPrismaError } from "../utils/error.js";
 
 const router = express.Router();
 
@@ -8,11 +9,20 @@ const router = express.Router();
    GET CONTACT PAGE (PUBLIC)
 ================================ */
 router.get("/", async (_req, res) => {
-  const page = await prisma.contactPage.findUnique({
-    where: { id: "contact" },
-  });
+  try {
+    const page = await prisma.contactPage.findUnique({
+      where: { id: "contact" },
+    });
 
-  res.json(page);
+    res.json(page);
+  } catch (err) {
+    console.error("GET /contact-page error:", err);
+
+    res.status(500).json({
+      error: "Failed to fetch contact page",
+      details: formatPrismaError(err),
+    });
+  }
 });
 
 /* ===============================

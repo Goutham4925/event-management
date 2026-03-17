@@ -1,6 +1,7 @@
 import express from "express";
 import prisma from "../config/db.js";
 import { protect } from "../middlewares/auth.middleware.js";
+import { formatPrismaError } from "../utils/error.js";
 
 const router = express.Router();
 
@@ -8,10 +9,20 @@ const router = express.Router();
    GET ALL CATEGORIES (PUBLIC)
 ================================ */
 router.get("/", async (_req, res) => {
-  const categories = await prisma.category.findMany({
-    orderBy: { order: "asc" },
-  });
-  res.json(categories);
+  try {
+    const categories = await prisma.category.findMany({
+      orderBy: { order: "asc" },
+    });
+
+    res.json(categories);
+  } catch (err) {
+    console.error("GET /categories error:", err);
+
+    res.status(500).json({
+      error: "Failed to fetch categories",
+      details: formatPrismaError(err),
+    });
+  }
 });
 
 /* ===============================

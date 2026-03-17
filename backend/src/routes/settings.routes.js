@@ -2,6 +2,7 @@ import express from "express";
 import prisma from "../../prisma/client.js";
 import cloudinary from "../config/cloudinary.js";
 import upload from "../middlewares/upload.js";
+import { formatPrismaError } from "../utils/error.js";
 
 const router = express.Router();
 
@@ -66,6 +67,7 @@ router.get("/", async (_req, res) => {
 
     res.status(500).json({
       error: "Failed to load settings",
+      details: formatPrismaError(err),
     });
   }
 });
@@ -99,6 +101,7 @@ router.put("/", async (req, res) => {
 
     res.status(500).json({
       error: "Failed to update settings",
+      details: formatPrismaError(err),
     });
   }
 });

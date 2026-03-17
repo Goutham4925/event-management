@@ -3,6 +3,7 @@ import prisma from "../config/db.js";
 import { protect } from "../middlewares/auth.middleware.js";
 import upload from "../middlewares/upload.js";
 import cloudinary from "../config/cloudinary.js";
+import { formatPrismaError } from "../utils/error.js";
 
 const router = express.Router();
 
@@ -35,7 +36,8 @@ router.get("/", async (_req, res) => {
     console.error("GET /events error:", err);
 
     res.status(500).json({
-      error: "Failed to fetch events"
+      error: "Failed to fetch events",
+      details: formatPrismaError(err),
     });
   }
 });
@@ -73,6 +75,7 @@ router.get("/:id", async (req, res) => {
 
     res.status(500).json({
       error: "Failed to fetch event",
+      details: formatPrismaError(err),
     });
   }
 });

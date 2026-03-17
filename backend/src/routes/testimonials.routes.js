@@ -1,6 +1,7 @@
 import express from "express";
 import prisma from "../config/db.js";
 import { protect } from "../middlewares/auth.middleware.js";
+import { formatPrismaError } from "../utils/error.js";
 
 const router = express.Router();
 
@@ -9,14 +10,23 @@ const router = express.Router();
    ?featured=true → homepage
 ================================ */
 router.get("/", async (req, res) => {
-  const { featured } = req.query;
+  try {
+    const { featured } = req.query;
 
-  const testimonials = await prisma.testimonial.findMany({
-    where: featured === "true" ? { featured: true } : undefined,
-    orderBy: { createdAt: "desc" },
-  });
+    const testimonials = await prisma.testimonial.findMany({
+      where: featured === "true" ? { featured: true } : undefined,
+      orderBy: { createdAt: "desc" },
+    });
 
-  res.json(testimonials);
+    res.json(testimonials);
+  } catch (err) {
+    console.error("GET /testimonials error:", err);
+
+    res.status(500).json({
+      error: "Failed to fetch testimonials",
+      details: formatPrismaError(err),
+    });
+  }
 });
 
 /* ===============================
