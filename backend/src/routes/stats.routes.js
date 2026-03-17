@@ -1,18 +1,28 @@
 import express from "express";
 import prisma from "../../prisma/client.js";
+import { formatPrismaError } from "../utils/error.js";
 
 const router = express.Router();
 
 /* ================= GET ================= */
 router.get("/", async (req, res) => {
-  const { page } = req.query;
+  try {
+    const { page } = req.query;
 
-  const stats = await prisma.stat.findMany({
-    where: page ? { page } : undefined,
-    orderBy: { order: "asc" },
-  });
+    const stats = await prisma.stat.findMany({
+      where: page ? { page } : undefined,
+      orderBy: { order: "asc" },
+    });
 
-  res.json(stats);
+    res.json(stats);
+  } catch (err) {
+    console.error("GET /stats error:", err);
+
+    res.status(500).json({
+      error: "Failed to fetch stats",
+      details: formatPrismaError(err),
+    });
+  }
 });
 
 /* ================= CREATE ================= */
