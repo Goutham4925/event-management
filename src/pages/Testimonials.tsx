@@ -21,23 +21,33 @@ const Testimonials = () => {
     let mounted = true;
 
     async function loadData() {
-      try {
-        const [ts, st, heroData] = await Promise.all([
-          apiGet<Testimonial[]>("/testimonials"),
-          apiGet<Stat[]>("/stats?page=TESTIMONIALS"),
-          apiGet<PageHero>("/page-hero/TESTIMONIALS"),
-        ]);
+      const [testimonialsRes, statsRes, heroRes] = await Promise.allSettled([
+        apiGet<Testimonial[]>("/testimonials"),
+        apiGet<Stat[]>("/stats?page=TESTIMONIALS"),
+        apiGet<PageHero>("/page-hero/TESTIMONIALS"),
+      ]);
 
-        if (!mounted) return;
+      if (!mounted) return;
 
-        setTestimonials(ts || []);
-        setStats(st || []);
-        setHero(heroData);
-      } catch (err) {
-        console.error("Failed to load testimonials page", err);
-      } finally {
-        if (mounted) setLoading(false);
+      if (testimonialsRes.status === "fulfilled") {
+        setTestimonials(testimonialsRes.value ?? []);
+      } else {
+        console.error("Failed to load testimonials", testimonialsRes.reason);
       }
+
+      if (statsRes.status === "fulfilled") {
+        setStats(statsRes.value ?? []);
+      } else {
+        console.error("Failed to load testimonial stats", statsRes.reason);
+      }
+
+      if (heroRes.status === "fulfilled") {
+        setHero(heroRes.value);
+      } else {
+        console.error("Failed to load testimonials hero", heroRes.reason);
+      }
+
+      setLoading(false);
     }
 
     loadData();

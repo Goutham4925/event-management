@@ -28,22 +28,36 @@ const Index = () => {
   /* ================= LOAD DATA ================= */
   useEffect(() => {
     async function loadHomeData() {
-      try {
-        const [settings, allEvents, ts, st] = await Promise.all([
+      const [settingsRes, eventsRes, testimonialsRes, statsRes] =
+        await Promise.allSettled([
           apiGet<SiteSettings>("/settings"),
           apiGet<Event[]>("/events"),
           apiGet<Testimonial[]>("/testimonials?featured=true"),
           apiGet<Stat[]>("/stats?page=HOME"),
         ]);
 
-        const featuredEvents = allEvents.filter((e) => e.featured);
+      if (settingsRes.status === "fulfilled") {
+        setSiteSettings(settingsRes.value);
+      } else {
+        console.error("Failed to load site settings", settingsRes.reason);
+      }
 
-        setSiteSettings(settings);
-        setEvents(featuredEvents);
-        setTestimonials(ts || []);
-        setStats(st || []);
-      } catch (err) {
-        console.error("Failed to load home data", err);
+      if (eventsRes.status === "fulfilled") {
+        setEvents((eventsRes.value ?? []).filter((e) => e.featured));
+      } else {
+        console.error("Failed to load events", eventsRes.reason);
+      }
+
+      if (testimonialsRes.status === "fulfilled") {
+        setTestimonials(testimonialsRes.value ?? []);
+      } else {
+        console.error("Failed to load testimonials", testimonialsRes.reason);
+      }
+
+      if (statsRes.status === "fulfilled") {
+        setStats(statsRes.value ?? []);
+      } else {
+        console.error("Failed to load home stats", statsRes.reason);
       }
     }
 

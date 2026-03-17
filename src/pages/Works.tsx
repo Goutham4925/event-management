@@ -27,31 +27,42 @@ const Works = () => {
   /* ================= LOAD DATA ================= */
   useEffect(() => {
     async function loadData() {
-      try {
-        const [eventsData, categoriesData, heroData] = await Promise.all([
-          apiGet<Event[]>("/events"),
-          apiGet<Category[]>("/categories"),
-          apiGet<PageHero>("/page-hero/WORKS"),
-        ]);
+      const [eventsRes, categoriesRes, heroRes] = await Promise.allSettled([
+        apiGet<Event[]>("/events"),
+        apiGet<Category[]>("/categories"),
+        apiGet<PageHero>("/page-hero/WORKS"),
+      ]);
 
-        setEvents(eventsData);
-        setHero(heroData);
-
-        const categoryNames = categoriesData.map((c) => c.name);
-        setCategories(["All", ...categoryNames]);
-
-        const urlCategory = searchParams.get("category");
-
-        if (urlCategory && categoryNames.includes(urlCategory)) {
-          setSelectedCategory(urlCategory);
-        } else {
-          setSelectedCategory("All");
-        }
-      } catch (err) {
-        console.error("Failed to load works page", err);
-      } finally {
-        setLoading(false);
+      if (eventsRes.status === "fulfilled") {
+        setEvents(eventsRes.value ?? []);
+      } else {
+        console.error("Failed to load works events", eventsRes.reason);
       }
+
+      if (heroRes.status === "fulfilled") {
+        setHero(heroRes.value);
+      } else {
+        console.error("Failed to load works hero", heroRes.reason);
+      }
+
+      let categoryNames: string[] = [];
+      if (categoriesRes.status === "fulfilled") {
+        categoryNames = (categoriesRes.value ?? []).map((c) => c.name);
+        setCategories(["All", ...categoryNames]);
+      } else {
+        console.error("Failed to load works categories", categoriesRes.reason);
+        setCategories(["All"]);
+      }
+
+      const urlCategory = searchParams.get("category");
+
+      if (urlCategory && categoryNames.includes(urlCategory)) {
+        setSelectedCategory(urlCategory);
+      } else {
+        setSelectedCategory("All");
+      }
+
+      setLoading(false);
     }
 
     loadData();

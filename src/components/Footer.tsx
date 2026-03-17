@@ -63,18 +63,28 @@ const Footer = () => {
   /* ================= LOAD DATA ================= */
   useEffect(() => {
     async function loadFooterData() {
-      try {
-        const [cats, contactPage, siteSettings] = await Promise.all([
-          apiGet<Category[]>("/categories"),
-          apiGet<ContactPage | null>("/contact-page"),
-          apiGet<SiteSettings>("/settings"),
-        ]);
+      const [categoriesRes, contactRes, settingsRes] = await Promise.allSettled([
+        apiGet<Category[]>("/categories"),
+        apiGet<ContactPage | null>("/contact-page"),
+        apiGet<SiteSettings>("/settings"),
+      ]);
 
-        setCategories(cats ?? []);
-        setContact(contactPage);
-        setSettings(siteSettings);
-      } catch (err) {
-        console.error("Failed to load footer data", err);
+      if (categoriesRes.status === "fulfilled") {
+        setCategories(categoriesRes.value ?? []);
+      } else {
+        console.error("Failed to load categories", categoriesRes.reason);
+      }
+
+      if (contactRes.status === "fulfilled") {
+        setContact(contactRes.value);
+      } else {
+        console.error("Failed to load contact page", contactRes.reason);
+      }
+
+      if (settingsRes.status === "fulfilled") {
+        setSettings(settingsRes.value);
+      } else {
+        console.error("Failed to load footer settings", settingsRes.reason);
       }
     }
 
