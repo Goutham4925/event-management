@@ -1,6 +1,10 @@
 const API_URL =
   import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
+const PUBLIC_CACHE_TTL_MS = 60 * 1000;
+const publicResponseCache = new Map<string, { expiresAt: number; data: unknown }>();
+const publicInFlightRequests = new Map<string, Promise<unknown>>();
+
 /* ===============================
    INTERNAL RESPONSE HANDLER
 ================================ */
@@ -20,12 +24,59 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return data;
 }
 
+function getCacheKey(path: string) {
+  return `${API_URL}${path}`;
+}
+
+async function cachedPublicGet<T>(path: string): Promise<T> {
+  const cacheKey = getCacheKey(path);
+  const now = Date.now();
+  const cached = publicResponseCache.get(cacheKey);
+
+  if (cached && cached.expiresAt > now) {
+    return cached.data as T;
+  }
+
+  const inFlight = publicInFlightRequests.get(cacheKey);
+  if (inFlight) {
+    return inFlight as Promise<T>;
+  }
+
+  const request = fetch(cacheKey)
+    .then(handleResponse<T>)
+    .then((data) => {
+      publicResponseCache.set(cacheKey, {
+        expiresAt: now + PUBLIC_CACHE_TTL_MS,
+        data,
+      });
+
+      return data;
+    })
+    .finally(() => {
+      publicInFlightRequests.delete(cacheKey);
+    });
+
+  publicInFlightRequests.set(cacheKey, request);
+  return request;
+}
+
+export function invalidateApiCache(path?: string) {
+  if (!path) {
+    publicResponseCache.clear();
+    publicInFlightRequests.clear();
+    return;
+  }
+
+  const cacheKey = getCacheKey(path);
+  publicResponseCache.delete(cacheKey);
+  publicInFlightRequests.delete(cacheKey);
+}
+
 /* ===============================
    GET (PUBLIC – NO AUTH)
 ================================ */
 export async function apiGet<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`);
-  return handleResponse<T>(res);
+  return cachedPublicGet<T>(path);
 }
 
 /* ===============================
@@ -61,7 +112,9 @@ export async function apiPostPublic<T>(
     body: JSON.stringify(body),
   });
 
-  return handleResponse<T>(res);
+  const data = await handleResponse<T>(res);
+  invalidateApiCache();
+  return data;
 }
 
 
@@ -72,8 +125,7 @@ export async function apiPostPublic<T>(
    ✔ Public content
 ================================ */
 export async function apiGetPublic<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`);
-  return handleResponse<T>(res);
+  return cachedPublicGet<T>(path);
 }
 
 /* ===============================
@@ -93,7 +145,9 @@ export async function apiPost<T>(
     body: JSON.stringify(body),
   });
 
-  return handleResponse<T>(res);
+  const data = await handleResponse<T>(res);
+  invalidateApiCache();
+  return data;
 }
 
 /* ===============================
@@ -113,7 +167,9 @@ export async function apiPut<T>(
     body: JSON.stringify(body),
   });
 
-  return handleResponse<T>(res);
+  const data = await handleResponse<T>(res);
+  invalidateApiCache();
+  return data;
 }
 
 /* ===============================
@@ -133,6 +189,8 @@ export async function apiDelete(
   if (!res.ok) {
     throw new Error("API error");
   }
+
+  invalidateApiCache();
 }
 
 /* ===============================
@@ -152,5 +210,7 @@ export async function apiUpload<T>(
     body: formData,
   });
 
-  return handleResponse<T>(res);
+  const data = await handleResponse<T>(res);
+  invalidateApiCache();
+  return data;
 }
